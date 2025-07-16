@@ -1,2 +1,25 @@
+<<<<<<< HEAD
 # Auto detect text files and perform LF normalization
 * text=auto
+=======
+*.dart linguist-language=Dart
+
+*.h linguist-detectable=false
+*.cc linguist-detectable=false
+*.cpp linguist-detectable=false
+*.kt linguist-detectable=false
+*.swift linguist-detectable=false
+*.xml linguist-detectable=false
+*.gradle linguist-detectable=false
+*.cmake linguist-detectable=false
+*.plist linguist-detectable=false
+*.json linguist-detectable=false
+*.html linguist-detectable=false
+*.sh linguist-detectable=false
+
+android/** linguist-vendored
+ios/** linguist-vendored
+windows/** linguist-vendored
+macos/** linguist-vendored
+linux/** linguist-vendored
+>>>>>>> 550eca4 (Add .gitattributes to fix language detection)
