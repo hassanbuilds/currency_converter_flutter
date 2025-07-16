@@ -1,5 +1,5 @@
 <<<<<<< HEAD
-# courency_converter
+# currency_converter
 
 A new Flutter project.
 
