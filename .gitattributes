@@ -1,18 +1,21 @@
+# Force GitHub to treat Dart as the main language
 *.dart linguist-language=Dart
 
-*.h linguist-detectable=false
-*.cc linguist-detectable=false
-*.cpp linguist-detectable=false
-*.kt linguist-detectable=false
-*.swift linguist-detectable=false
-*.xml linguist-detectable=false
-*.gradle linguist-detectable=false
-*.cmake linguist-detectable=false
-*.plist linguist-detectable=false
-*.json linguist-detectable=false
-*.html linguist-detectable=false
-*.sh linguist-detectable=false
+# Treat other file types as plain text so they don't affect language stats
+*.h linguist-language=Text
+*.cc linguist-language=Text
+*.cpp linguist-language=Text
+*.kt linguist-language=Text
+*.swift linguist-language=Text
+*.xml linguist-language=Text
+*.gradle linguist-language=Text
+*.cmake linguist-language=Text
+*.plist linguist-language=Text
+*.json linguist-language=Text
+*.html linguist-language=Text
+*.sh linguist-language=Text
 
+# Mark platform-specific folders as vendored (ignored in language stats)
 android/** linguist-vendored
 ios/** linguist-vendored
 windows/** linguist-vendored

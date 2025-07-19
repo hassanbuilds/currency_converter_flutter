@@ -1,171 +1,219 @@
 import 'package:flutter/material.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 
-class CurrencyConverterMaterialPage extends StatefulWidget {
+void main() {
+  runApp(const CurrencyConverterApp());
+}
+
+class CurrencyConverterApp extends StatefulWidget {
+  const CurrencyConverterApp({super.key});
+
+  @override
+  State<CurrencyConverterApp> createState() => _CurrencyConverterAppState();
+}
+
+class _CurrencyConverterAppState extends State<CurrencyConverterApp> {
+  bool _isDarkMode = false;
+
+  void _toggleTheme() {
+    setState(() {
+      _isDarkMode = !_isDarkMode;
+    });
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return MaterialApp(
+      debugShowCheckedModeBanner: false,
+      theme: _isDarkMode ? ThemeData.dark() : ThemeData.light(),
+      home: CurrencyConverterPage(
+        isDarkMode: _isDarkMode,
+        toggleTheme: _toggleTheme,
+      ),
+    );
+  }
+}
+
+class CurrencyConverterPage extends StatefulWidget {
   final bool isDarkMode;
   final VoidCallback toggleTheme;
-
-  const CurrencyConverterMaterialPage({
+  const CurrencyConverterPage({
     super.key,
     required this.isDarkMode,
     required this.toggleTheme,
   });
 
   @override
-  State<CurrencyConverterMaterialPage> createState() =>
-      _CurrencyConverterMaterialPageState();
+  State<CurrencyConverterPage> createState() => _CurrencyConverterPageState();
 }
 
-class _CurrencyConverterMaterialPageState
-    extends State<CurrencyConverterMaterialPage> {
-  final TextEditingController textEditingController = TextEditingController();
-  double result = 0;
-  bool isReversed = false;
+class _CurrencyConverterPageState extends State<CurrencyConverterPage> {
+  final TextEditingController _amountController = TextEditingController();
+  String _fromCurrency = 'USD';
+  String _toCurrency = 'PKR';
+  String _result = '';
+  List<String> _history = [];
 
-  final border = OutlineInputBorder(
-    borderSide: const BorderSide(width: 2.0),
-    borderRadius: BorderRadius.circular(8),
-  );
+  final Map<String, String> _currencySymbols = {
+    'USD': '\$',
+    'PKR': '₨',
+    'EUR': '€',
+    'GBP': '£',
+  };
 
-  void convertCurrency() {
-    final inputText = textEditingController.text;
-    final double? input = double.tryParse(inputText);
+  final Map<String, double> _exchangeRates = {
+    'USD': 1.0,
+    'PKR': 277.0,
+    'EUR': 0.92,
+    'GBP': 0.78,
+  };
 
-    if (input != null) {
-      setState(() {
-        result = isReversed ? input / 280 : input * 280;
-      });
-    } else {
-      setState(() {
-        result = 0;
-      });
-    }
+  @override
+  void initState() {
+    super.initState();
+    _loadHistory();
+  }
+
+  void _loadHistory() async {
+    final prefs = await SharedPreferences.getInstance();
+    setState(() {
+      _history = prefs.getStringList('conversion_history') ?? [];
+    });
+  }
+
+  void _saveToHistory(String entry) async {
+    final prefs = await SharedPreferences.getInstance();
+    setState(() {
+      _history.insert(0, entry);
+      prefs.setStringList('conversion_history', _history);
+    });
+  }
+
+  void _convertCurrency() {
+    final amount = double.tryParse(_amountController.text);
+    if (amount == null) return;
+
+    double fromRate = _exchangeRates[_fromCurrency]!;
+    double toRate = _exchangeRates[_toCurrency]!;
+    double result = amount * (toRate / fromRate);
+
+    setState(() {
+      _result = '${_currencySymbols[_toCurrency]} ${result.toStringAsFixed(2)}';
+    });
+
+    String entry =
+        '${_currencySymbols[_fromCurrency]}$amount $_fromCurrency → ${_currencySymbols[_toCurrency]}${result.toStringAsFixed(2)} $_toCurrency';
+    _saveToHistory(entry);
+  }
+
+  void _swapCurrencies() {
+    setState(() {
+      final temp = _fromCurrency;
+      _fromCurrency = _toCurrency;
+      _toCurrency = temp;
+    });
+  }
+
+  Widget _buildCurrencyDropdown(String value, ValueChanged<String?> onChanged) {
+    return DropdownButton<String>(
+      value: value,
+      items:
+          _exchangeRates.keys
+              .map(
+                (currency) => DropdownMenuItem(
+                  value: currency,
+                  child: Text('$currency ${_currencySymbols[currency]}'),
+                ),
+              )
+              .toList(),
+      onChanged: onChanged,
+    );
   }
 
   @override
   Widget build(BuildContext context) {
-    String fromCurrency = isReversed ? 'PKR' : 'USD';
-    String toCurrency = isReversed ? 'USD' : 'PKR';
-
     return Scaffold(
-      backgroundColor: widget.isDarkMode ? Colors.black : Colors.blueGrey[50]!,
       appBar: AppBar(
-        backgroundColor:
-            widget.isDarkMode ? Colors.black : Colors.blueGrey[50]!,
-        elevation: 0,
-        centerTitle: true,
-        title: Text(
-          'Currency Converter ($fromCurrency → $toCurrency)',
-          style: TextStyle(
-            color: widget.isDarkMode ? Colors.white : Colors.black,
-          ),
-        ),
+        title: const Text('Currency Converter'),
         actions: [
           IconButton(
-            icon: Icon(
-              widget.isDarkMode ? Icons.light_mode : Icons.dark_mode,
-              color: widget.isDarkMode ? Colors.white : Colors.black,
-            ),
+            icon: Icon(widget.isDarkMode ? Icons.dark_mode : Icons.light_mode),
             onPressed: widget.toggleTheme,
           ),
         ],
       ),
       body: Padding(
-        padding: const EdgeInsets.all(20),
+        padding: const EdgeInsets.symmetric(horizontal: 16.0, vertical: 24),
         child: Column(
-          mainAxisAlignment: MainAxisAlignment.center,
+          crossAxisAlignment: CrossAxisAlignment.stretch,
           children: [
-            Card(
-              elevation: 4,
-              color:
-                  widget.isDarkMode
-                      ? Colors.grey[850]
-                      : Colors.blueGrey.shade100,
-              shape: RoundedRectangleBorder(
-                borderRadius: BorderRadius.circular(16),
+            TextField(
+              controller: _amountController,
+              keyboardType: TextInputType.number,
+              decoration: const InputDecoration(
+                labelText: 'Enter Amount',
+                border: OutlineInputBorder(),
               ),
-              child: Padding(
-                padding: const EdgeInsets.symmetric(
-                  vertical: 24,
-                  horizontal: 16,
+            ),
+            const SizedBox(height: 16),
+            Row(
+              children: [
+                Expanded(
+                  child: _buildCurrencyDropdown(
+                    _fromCurrency,
+                    (val) => setState(() => _fromCurrency = val!),
+                  ),
                 ),
-                child: Column(
-                  children: [
-                    Text(
-                      '$toCurrency ${result.toStringAsFixed(2)}',
-                      style: TextStyle(
-                        fontSize: 40,
-                        fontWeight: FontWeight.bold,
-                        color:
-                            widget.isDarkMode
-                                ? Colors.white
-                                : Colors.blueGrey[900],
-                      ),
-                    ),
-                    const SizedBox(height: 20),
-                    TextField(
-                      controller: textEditingController,
-                      keyboardType: const TextInputType.numberWithOptions(
-                        decimal: true,
-                      ),
-                      decoration: InputDecoration(
-                        hintText: 'Enter amount in $fromCurrency',
-                        prefixIcon: const Icon(Icons.monetization_on),
-                        border: border,
-                        focusedBorder: border,
-                        enabledBorder: border,
-                        filled: true,
-                        fillColor:
-                            widget.isDarkMode
-                                ? Colors.grey[800]
-                                : Colors.grey[200],
-                      ),
-                      style: TextStyle(
-                        color:
-                            widget.isDarkMode ? Colors.white : Colors.black87,
-                      ),
-                    ),
-                    const SizedBox(height: 16),
-                    ElevatedButton(
-                      onPressed: convertCurrency,
-                      style: ElevatedButton.styleFrom(
-                        backgroundColor:
-                            widget.isDarkMode
-                                ? Colors.white
-                                : Colors.blueGrey[900],
-                        foregroundColor:
-                            widget.isDarkMode ? Colors.black : Colors.white,
-                        minimumSize: const Size(double.infinity, 50),
-                        shape: RoundedRectangleBorder(
-                          borderRadius: BorderRadius.circular(12),
-                        ),
-                      ),
-                      child: const Text('Convert'),
-                    ),
-                    const SizedBox(height: 12),
-                    Row(
-                      mainAxisAlignment: MainAxisAlignment.center,
-                      children: [
-                        Text(
-                          "Reverse Conversion",
-                          style: TextStyle(
-                            color:
-                                widget.isDarkMode ? Colors.white : Colors.black,
-                          ),
-                        ),
-                        Switch(
-                          value: isReversed,
-                          onChanged: (value) {
-                            setState(() {
-                              isReversed = value;
-                              result = 0;
-                              textEditingController.clear();
-                            });
-                          },
-                        ),
-                      ],
-                    ),
-                  ],
+                IconButton(
+                  icon: const Icon(Icons.swap_horiz),
+                  onPressed: _swapCurrencies,
                 ),
+                Expanded(
+                  child: _buildCurrencyDropdown(
+                    _toCurrency,
+                    (val) => setState(() => _toCurrency = val!),
+                  ),
+                ),
+              ],
+            ),
+            const SizedBox(height: 16),
+            ElevatedButton(
+              onPressed: _convertCurrency,
+              child: const Text('Convert'),
+            ),
+            const SizedBox(height: 16),
+            if (_result.isNotEmpty)
+              Card(
+                color: Theme.of(context).colorScheme.primaryContainer,
+                elevation: 4,
+                margin: const EdgeInsets.only(bottom: 16),
+                child: Padding(
+                  padding: const EdgeInsets.all(16.0),
+                  child: Text(
+                    'Converted Amount: $_result',
+                    style: const TextStyle(
+                      fontSize: 18,
+                      fontWeight: FontWeight.bold,
+                    ),
+                  ),
+                ),
+              ),
+            const Divider(),
+            const Text(
+              'Conversion History',
+              style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
+            ),
+            const SizedBox(height: 8),
+            Expanded(
+              child: ListView.builder(
+                itemCount: _history.length,
+                itemBuilder:
+                    (context, index) => Card(
+                      child: ListTile(
+                        leading: const Icon(Icons.history),
+                        title: Text(_history[index]),
+                      ),
+                    ),
               ),
             ),
           ],
