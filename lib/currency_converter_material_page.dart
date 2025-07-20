@@ -1,39 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
-void main() {
-  runApp(const CurrencyConverterApp());
-}
-
-class CurrencyConverterApp extends StatefulWidget {
-  const CurrencyConverterApp({super.key});
-
-  @override
-  State<CurrencyConverterApp> createState() => _CurrencyConverterAppState();
-}
-
-class _CurrencyConverterAppState extends State<CurrencyConverterApp> {
-  bool _isDarkMode = false;
-
-  void _toggleTheme() {
-    setState(() {
-      _isDarkMode = !_isDarkMode;
-    });
-  }
-
-  @override
-  Widget build(BuildContext context) {
-    return MaterialApp(
-      debugShowCheckedModeBanner: false,
-      theme: _isDarkMode ? ThemeData.dark() : ThemeData.light(),
-      home: CurrencyConverterPage(
-        isDarkMode: _isDarkMode,
-        toggleTheme: _toggleTheme,
-      ),
-    );
-  }
-}
-
 class CurrencyConverterPage extends StatefulWidget {
   final bool isDarkMode;
   final VoidCallback toggleTheme;
@@ -56,7 +23,7 @@ class _CurrencyConverterPageState extends State<CurrencyConverterPage> {
 
   final Map<String, String> _currencySymbols = {
     'USD': '\$',
-    'PKR': '₨',
+    'PKR': 'Rs',
     'EUR': '€',
     'GBP': '£',
   };
@@ -98,7 +65,8 @@ class _CurrencyConverterPageState extends State<CurrencyConverterPage> {
     double result = amount * (toRate / fromRate);
 
     setState(() {
-      _result = '${_currencySymbols[_toCurrency]} ${result.toStringAsFixed(2)}';
+      _result =
+          '${amount.toStringAsFixed(1)} ${_currencySymbols[_fromCurrency]} = ${result.toStringAsFixed(2)} ${_currencySymbols[_toCurrency]}';
     });
 
     String entry =
@@ -117,6 +85,11 @@ class _CurrencyConverterPageState extends State<CurrencyConverterPage> {
   Widget _buildCurrencyDropdown(String value, ValueChanged<String?> onChanged) {
     return DropdownButton<String>(
       value: value,
+      underline: Container(),
+      style: TextStyle(
+        fontSize: 16,
+        color: Theme.of(context).textTheme.bodyLarge?.color,
+      ),
       items:
           _exchangeRates.keys
               .map(
@@ -142,82 +115,124 @@ class _CurrencyConverterPageState extends State<CurrencyConverterPage> {
           ),
         ],
       ),
-      body: Padding(
-        padding: const EdgeInsets.symmetric(horizontal: 16.0, vertical: 24),
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.stretch,
-          children: [
-            TextField(
-              controller: _amountController,
-              keyboardType: TextInputType.number,
-              decoration: const InputDecoration(
-                labelText: 'Enter Amount',
-                border: OutlineInputBorder(),
-              ),
+      body: Column(
+        children: [
+          // Added bold centered title
+          Padding(
+            padding: const EdgeInsets.only(top: 8.0, bottom: 16.0),
+            child: Text(
+              'Currency Converter',
+              style: const TextStyle(fontSize: 20, fontWeight: FontWeight.bold),
+              textAlign: TextAlign.center,
             ),
-            const SizedBox(height: 16),
-            Row(
-              children: [
-                Expanded(
-                  child: _buildCurrencyDropdown(
-                    _fromCurrency,
-                    (val) => setState(() => _fromCurrency = val!),
-                  ),
-                ),
-                IconButton(
-                  icon: const Icon(Icons.swap_horiz),
-                  onPressed: _swapCurrencies,
-                ),
-                Expanded(
-                  child: _buildCurrencyDropdown(
-                    _toCurrency,
-                    (val) => setState(() => _toCurrency = val!),
-                  ),
-                ),
-              ],
-            ),
-            const SizedBox(height: 16),
-            ElevatedButton(
-              onPressed: _convertCurrency,
-              child: const Text('Convert'),
-            ),
-            const SizedBox(height: 16),
-            if (_result.isNotEmpty)
-              Card(
-                color: Theme.of(context).colorScheme.primaryContainer,
-                elevation: 4,
-                margin: const EdgeInsets.only(bottom: 16),
-                child: Padding(
-                  padding: const EdgeInsets.all(16.0),
-                  child: Text(
-                    'Converted Amount: $_result',
-                    style: const TextStyle(
-                      fontSize: 18,
-                      fontWeight: FontWeight.bold,
-                    ),
-                  ),
-                ),
-              ),
-            const Divider(),
-            const Text(
-              'Conversion History',
-              style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
-            ),
-            const SizedBox(height: 8),
-            Expanded(
-              child: ListView.builder(
-                itemCount: _history.length,
-                itemBuilder:
-                    (context, index) => Card(
-                      child: ListTile(
-                        leading: const Icon(Icons.history),
-                        title: Text(_history[index]),
+          ),
+          Expanded(
+            child: Padding(
+              padding: const EdgeInsets.all(16.0),
+              child: Column(
+                children: [
+                  TextField(
+                    controller: _amountController,
+                    keyboardType: TextInputType.number,
+                    decoration: InputDecoration(
+                      hintText: 'Enter Amount',
+                      border: const OutlineInputBorder(),
+                      contentPadding: const EdgeInsets.symmetric(
+                        horizontal: 16,
+                        vertical: 14,
                       ),
                     ),
+                  ),
+                  const SizedBox(height: 24),
+                  Row(
+                    children: [
+                      Expanded(
+                        child: _buildCurrencyDropdown(
+                          _fromCurrency,
+                          (val) => setState(() => _fromCurrency = val!),
+                        ),
+                      ),
+                      IconButton(
+                        icon: const Icon(Icons.swap_horiz),
+                        onPressed: _swapCurrencies,
+                      ),
+                      Expanded(
+                        child: _buildCurrencyDropdown(
+                          _toCurrency,
+                          (val) => setState(() => _toCurrency = val!),
+                        ),
+                      ),
+                    ],
+                  ),
+                  const SizedBox(height: 24),
+                  ElevatedButton(
+                    onPressed: _convertCurrency,
+                    style: ElevatedButton.styleFrom(
+                      padding: const EdgeInsets.symmetric(vertical: 16),
+                      shape: RoundedRectangleBorder(
+                        borderRadius: BorderRadius.circular(8),
+                      ),
+                      minimumSize: const Size(double.infinity, 0),
+                    ),
+                    child: const Text(
+                      'Convert',
+                      style: TextStyle(fontSize: 16),
+                    ),
+                  ),
+                  const SizedBox(height: 24),
+                  if (_result.isNotEmpty)
+                    Card(
+                      child: Padding(
+                        padding: const EdgeInsets.all(16.0),
+                        child: Text(
+                          _result,
+                          style: const TextStyle(fontSize: 16),
+                        ),
+                      ),
+                    ),
+                  const Divider(height: 32),
+                  const Text(
+                    'Conversion History',
+                    style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
+                  ),
+                  const SizedBox(height: 8),
+                  Expanded(
+                    child:
+                        _history.isEmpty
+                            ? Center(
+                              child: Text(
+                                'No history yet.',
+                                style: TextStyle(
+                                  color: Theme.of(context).hintColor,
+                                ),
+                              ),
+                            )
+                            : ListView.builder(
+                              itemCount: _history.length,
+                              itemBuilder:
+                                  (context, index) => Card(
+                                    margin: const EdgeInsets.symmetric(
+                                      vertical: 4,
+                                    ),
+                                    child: ListTile(
+                                      contentPadding:
+                                          const EdgeInsets.symmetric(
+                                            horizontal: 16,
+                                          ),
+                                      leading: const Icon(
+                                        Icons.history,
+                                        size: 20,
+                                      ),
+                                      title: Text(_history[index]),
+                                    ),
+                                  ),
+                            ),
+                  ),
+                ],
               ),
             ),
-          ],
-        ),
+          ),
+        ],
       ),
     );
   }
