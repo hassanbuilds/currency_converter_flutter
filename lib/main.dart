@@ -26,7 +26,8 @@ class _CurrencyConverterAppState extends State<CurrencyConverterApp> {
     return MaterialApp(
       debugShowCheckedModeBanner: false,
       theme: _isDarkMode ? ThemeData.dark() : ThemeData.light(),
-      home: CurrencyConverterMaterialPage(
+      home: CurrencyConverterPage(
+        // ✅ Fix is here — match the actual class name
         isDarkMode: _isDarkMode,
         toggleTheme: _toggleTheme,
       ),
