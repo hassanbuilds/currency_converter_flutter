@@ -123,149 +123,143 @@ class _CurrencyConverterPageState extends State<CurrencyConverterPage> {
           ),
         ],
       ),
-      body: Column(
-        children: [
-          // Bold centered title
-          Padding(
-            padding: const EdgeInsets.only(top: 20.0, bottom: 16.0),
-            child: Text(
-              'Currency Converter',
-              style: const TextStyle(fontSize: 20, fontWeight: FontWeight.bold),
-              textAlign: TextAlign.center,
-            ),
-          ),
-          Expanded(
-            child: Padding(
-              padding: const EdgeInsets.all(16.0),
-              child: Column(
+      body: SafeArea(
+        child: SingleChildScrollView(
+          //  Fix bottom overflow with scrolling
+          padding: const EdgeInsets.all(16.0),
+          child: Column(
+            children: [
+              // Bold centered title
+              const Padding(
+                padding: EdgeInsets.only(top: 10.0, bottom: 20.0),
+                child: Text(
+                  'Currency Converter',
+                  style: TextStyle(fontSize: 20, fontWeight: FontWeight.bold),
+                  textAlign: TextAlign.center,
+                ),
+              ),
+
+              // Input Field
+              TextField(
+                controller: _amountController,
+                keyboardType: TextInputType.number,
+                decoration: const InputDecoration(
+                  hintText: 'Enter Amount',
+                  border: OutlineInputBorder(),
+                  contentPadding: EdgeInsets.symmetric(
+                    horizontal: 16,
+                    vertical: 14,
+                  ),
+                ),
+              ),
+              const SizedBox(height: 24),
+
+              //  Centered Currency Dropdown Row with spacing
+              Center(
+                child: Row(
+                  mainAxisSize: MainAxisSize.min,
+                  children: [
+                    _buildCurrencyDropdown(
+                      _fromCurrency,
+                      (val) => setState(() => _fromCurrency = val!),
+                    ),
+                    const SizedBox(width: 20), // extra spacing
+                    ElevatedButton(
+                      onPressed: _swapCurrencies,
+                      style: ElevatedButton.styleFrom(
+                        padding: const EdgeInsets.symmetric(
+                          horizontal: 16,
+                          vertical: 12,
+                        ),
+                        shape: const CircleBorder(),
+                      ),
+                      child: const Icon(Icons.swap_horiz),
+                    ),
+                    const SizedBox(width: 20), // extra spacing
+                    _buildCurrencyDropdown(
+                      _toCurrency,
+                      (val) => setState(() => _toCurrency = val!),
+                    ),
+                  ],
+                ),
+              ),
+
+              const SizedBox(height: 24),
+              ElevatedButton(
+                onPressed: _convertCurrency,
+                style: ElevatedButton.styleFrom(
+                  padding: const EdgeInsets.symmetric(vertical: 16),
+                  shape: RoundedRectangleBorder(
+                    borderRadius: BorderRadius.circular(8),
+                  ),
+                  minimumSize: const Size(double.infinity, 0),
+                ),
+                child: const Text('Convert', style: TextStyle(fontSize: 16)),
+              ),
+              const SizedBox(height: 24),
+
+              // Result
+              if (_result.isNotEmpty)
+                Card(
+                  child: Padding(
+                    padding: const EdgeInsets.all(16.0),
+                    child: Text(
+                      _result,
+                      style: const TextStyle(fontSize: 16),
+                      textAlign: TextAlign.center,
+                    ),
+                  ),
+                ),
+              const Divider(height: 32),
+
+              //  Conversion History Header with Clear Button
+              Row(
+                mainAxisAlignment: MainAxisAlignment.spaceBetween,
                 children: [
-                  TextField(
-                    controller: _amountController,
-                    keyboardType: TextInputType.number,
-                    decoration: InputDecoration(
-                      hintText: 'Enter Amount',
-                      border: const OutlineInputBorder(),
-                      contentPadding: const EdgeInsets.symmetric(
-                        horizontal: 16,
-                        vertical: 14,
-                      ),
-                    ),
+                  const Text(
+                    'Conversion History',
+                    style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
                   ),
-                  const SizedBox(height: 24),
-
-                  //  Centered Currency Dropdown Row with spacing
-                  Center(
-                    child: Row(
-                      mainAxisSize: MainAxisSize.min,
-                      children: [
-                        _buildCurrencyDropdown(
-                          _fromCurrency,
-                          (val) => setState(() => _fromCurrency = val!),
-                        ),
-                        const SizedBox(width: 12),
-                        IconButton(
-                          icon: const Icon(Icons.swap_horiz),
-                          onPressed: _swapCurrencies,
-                        ),
-                        const SizedBox(width: 12),
-                        _buildCurrencyDropdown(
-                          _toCurrency,
-                          (val) => setState(() => _toCurrency = val!),
-                        ),
-                      ],
+                  TextButton.icon(
+                    onPressed: _clearHistory,
+                    icon: const Icon(Icons.delete, color: Colors.red),
+                    label: const Text(
+                      "Clear",
+                      style: TextStyle(color: Colors.red),
                     ),
-                  ),
-
-                  const SizedBox(height: 24),
-                  ElevatedButton(
-                    onPressed: _convertCurrency,
-                    style: ElevatedButton.styleFrom(
-                      padding: const EdgeInsets.symmetric(vertical: 16),
-                      shape: RoundedRectangleBorder(
-                        borderRadius: BorderRadius.circular(8),
-                      ),
-                      minimumSize: const Size(double.infinity, 0),
-                    ),
-                    child: const Text(
-                      'Convert',
-                      style: TextStyle(fontSize: 16),
-                    ),
-                  ),
-                  const SizedBox(height: 24),
-                  if (_result.isNotEmpty)
-                    Card(
-                      child: Padding(
-                        padding: const EdgeInsets.all(16.0),
-                        child: Text(
-                          _result,
-                          style: const TextStyle(fontSize: 16),
-                          textAlign: TextAlign.center,
-                        ),
-                      ),
-                    ),
-                  const Divider(height: 32),
-
-                  //  Conversion History Header with Clear Button
-                  Row(
-                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                    children: [
-                      const Text(
-                        'Conversion History',
-                        style: TextStyle(
-                          fontSize: 16,
-                          fontWeight: FontWeight.bold,
-                        ),
-                      ),
-                      TextButton.icon(
-                        onPressed: _clearHistory,
-                        icon: const Icon(Icons.delete, color: Colors.red),
-                        label: const Text(
-                          "Clear",
-                          style: TextStyle(color: Colors.red),
-                        ),
-                      ),
-                    ],
-                  ),
-                  const SizedBox(height: 8),
-
-                  //  History List
-                  Expanded(
-                    child:
-                        _history.isEmpty
-                            ? Center(
-                              child: Text(
-                                'No history yet.',
-                                style: TextStyle(
-                                  color: Theme.of(context).hintColor,
-                                ),
-                              ),
-                            )
-                            : ListView.builder(
-                              itemCount: _history.length,
-                              itemBuilder:
-                                  (context, index) => Card(
-                                    margin: const EdgeInsets.symmetric(
-                                      vertical: 4,
-                                    ),
-                                    child: ListTile(
-                                      contentPadding:
-                                          const EdgeInsets.symmetric(
-                                            horizontal: 16,
-                                          ),
-                                      leading: const Icon(
-                                        Icons.history,
-                                        size: 20,
-                                      ),
-                                      title: Text(_history[index]),
-                                    ),
-                                  ),
-                            ),
                   ),
                 ],
               ),
-            ),
+              const SizedBox(height: 8),
+
+              //  History List
+              if (_history.isEmpty)
+                Center(
+                  child: Text(
+                    'No history yet.',
+                    style: TextStyle(color: Theme.of(context).hintColor),
+                  ),
+                )
+              else
+                ListView.builder(
+                  shrinkWrap: true, // Works inside scroll view
+                  physics: const NeverScrollableScrollPhysics(),
+                  itemCount: _history.length,
+                  itemBuilder:
+                      (context, index) => Card(
+                        margin: const EdgeInsets.symmetric(vertical: 4),
+                        child: ListTile(
+                          contentPadding: const EdgeInsets.symmetric(
+                            horizontal: 16,
+                          ),
+                          leading: const Icon(Icons.history, size: 20),
+                          title: Text(_history[index]),
+                        ),
+                      ),
+                ),
+            ],
           ),
-        ],
+        ),
       ),
     );
   }
