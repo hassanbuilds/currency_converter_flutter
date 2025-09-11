@@ -16,8 +16,8 @@ This app allows users to convert between multiple currencies, toggle themes, and
 ---
 
 ## 📸 Screenshots
-<p align="center">
- 
+<img src="https://github.com/user-attachments/assets/22ffaafa-c3dd-41e6-a914-ffb6d8578b61" alt="light theme with conversion" width="250"/>
+
 </p>
 
 ---
