@@ -1,21 +1,32 @@
-<<<<<<< HEAD
-# currency_converter
+# 💱 Currency Converter App
 
-A new Flutter project.
+A simple and beginner-friendly **Currency Converter** built with **Flutter**.  
+This app allows users to convert between multiple currencies, toggle themes, and view their conversion history.  
 
-## Getting Started
+---
 
-This project is a starting point for a Flutter application.
+## 🚀 Features Implemented
+- Convert between **multiple currencies** (not limited to USD ↔ PKR)
+- **Reverse conversion** toggle
+- **Light/Dark theme** switch
+- **Conversion history** saved using `SharedPreferences`
+- **Scrollable layout** to handle keyboard without overflow issues
+- **Clean and beginner-friendly UI**
 
-A few resources to get you started if this is your first Flutter project:
+---
 
-- [Lab: Write your first Flutter app](https://docs.flutter.dev/get-started/codelab)
-- [Cookbook: Useful Flutter samples](https://docs.flutter.dev/cookbook)
+## 📸 Screenshots
+<p align="center">
+  <img src="screenshots/light_mode.png" alt="Light Mode" width="250"/>
+  <img src="screenshots/dark_mode.png" alt="Dark Mode" width="250"/>
+  <img src="screenshots/conversion_history.png" alt="Conversion History" width="250"/>
+</p>
 
-For help getting started with Flutter development, view the
-[online documentation](https://docs.flutter.dev/), which offers tutorials,
-samples, guidance on mobile development, and a full API reference.
-=======
-# flutter-currency-converter
-An ideal starter project for Flutter beginners: a currency converter app that tracks exchange rates between PKR and USD. It features a clean Material Design interface, supports dark/light theme toggling, and enables two-way conversion between USD and PKR.
->>>>>>> e9ebcd658d5f3ef30af7fbbd2b104b34c32f90e8
+---
+
+## 🛠️ Tech Stack
+- **Flutter** (Dart)
+- **SharedPreferences** for local storage
+- **Material Design** for UI
+
+---
