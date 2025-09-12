@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:google_fonts/google_fonts.dart';
 import 'currency_converter_material_page.dart';
 
 void main() {
@@ -25,7 +26,10 @@ class _CurrencyConverterAppState extends State<CurrencyConverterApp> {
   Widget build(BuildContext context) {
     return MaterialApp(
       debugShowCheckedModeBanner: false,
-      theme: _isDarkMode ? ThemeData.dark() : ThemeData.light(),
+      theme: ThemeData(
+        brightness: _isDarkMode ? Brightness.dark : Brightness.light,
+        textTheme: GoogleFonts.poppinsTextTheme(Theme.of(context).textTheme),
+      ),
       home: CurrencyConverterPage(
         isDarkMode: _isDarkMode,
         toggleTheme: _toggleTheme,
