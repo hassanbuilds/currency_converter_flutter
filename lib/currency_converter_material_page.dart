@@ -44,6 +44,7 @@ class _CurrencyConverterPageState extends State<CurrencyConverterPage> {
     _loadFavorites();
   }
 
+  // ------------------- HISTORY -------------------
   void _loadHistory() async {
     final prefs = await SharedPreferences.getInstance();
     setState(() {
@@ -67,6 +68,7 @@ class _CurrencyConverterPageState extends State<CurrencyConverterPage> {
     });
   }
 
+  // ------------------- FAVORITES -------------------
   void _loadFavorites() async {
     final prefs = await SharedPreferences.getInstance();
     setState(() {
@@ -84,7 +86,7 @@ class _CurrencyConverterPageState extends State<CurrencyConverterPage> {
       } else {
         _favorites.add(pair);
 
-        // Show popup when added to favorites
+        // ✅ Popup on add
         showDialog(
           context: context,
           builder:
@@ -107,6 +109,7 @@ class _CurrencyConverterPageState extends State<CurrencyConverterPage> {
     prefs.setStringList('favorites', _favorites);
   }
 
+  // ------------------- CONVERSION -------------------
   void _convertCurrency() {
     final amount = double.tryParse(_amountController.text);
     if (amount == null) return;
@@ -133,6 +136,7 @@ class _CurrencyConverterPageState extends State<CurrencyConverterPage> {
     });
   }
 
+  // ------------------- DUMMY CHART DATA -------------------
   List<double> _getDummyChartData(String from, String to) {
     if (from == "USD" && to == "PKR") {
       return [276, 277, 278, 276.5, 277.2, 278.1, 277.9];
@@ -166,6 +170,7 @@ class _CurrencyConverterPageState extends State<CurrencyConverterPage> {
     );
   }
 
+  // ------------------- UI -------------------
   @override
   Widget build(BuildContext context) {
     List<double> chartData = _getDummyChartData(_fromCurrency, _toCurrency);
@@ -194,7 +199,7 @@ class _CurrencyConverterPageState extends State<CurrencyConverterPage> {
           padding: const EdgeInsets.all(16.0),
           child: Column(
             children: [
-              // Input & Conversion Section
+              // ---------------- INPUT ----------------
               const Text(
                 'Currency Converter',
                 style: TextStyle(fontSize: 20, fontWeight: FontWeight.bold),
@@ -249,6 +254,7 @@ class _CurrencyConverterPageState extends State<CurrencyConverterPage> {
                 child: const Text('Convert', style: TextStyle(fontSize: 16)),
               ),
               const SizedBox(height: 24),
+
               if (_result.isNotEmpty)
                 Card(
                   child: Padding(
@@ -261,7 +267,7 @@ class _CurrencyConverterPageState extends State<CurrencyConverterPage> {
                   ),
                 ),
 
-              // Chart Section
+              // ---------------- CHART ----------------
               const Divider(height: 32),
               Card(
                 elevation: 4,
@@ -317,7 +323,7 @@ class _CurrencyConverterPageState extends State<CurrencyConverterPage> {
                 ),
               ),
 
-              // Favorites Section
+              // ---------------- FAVORITES ----------------
               const Divider(height: 32),
               if (_favorites.isNotEmpty) ...[
                 const Text(
@@ -331,6 +337,9 @@ class _CurrencyConverterPageState extends State<CurrencyConverterPage> {
                   itemCount: _favorites.length,
                   itemBuilder: (context, index) {
                     String fav = _favorites[index];
+                    String from = fav.split("→")[0].trim();
+                    String to = fav.split("→")[1].trim();
+
                     return Card(
                       child: ListTile(
                         leading: const Icon(Icons.star, color: Colors.amber),
@@ -339,8 +348,17 @@ class _CurrencyConverterPageState extends State<CurrencyConverterPage> {
                           style: const TextStyle(fontWeight: FontWeight.bold),
                         ),
                         subtitle: Text(
-                          "Rate: 1 ${fav.split("→")[0].trim()} = "
-                          "${_exchangeRates[fav.split("→")[1].trim()]?.toStringAsFixed(2) ?? 'N/A'}",
+                          "Rate: 1 $from = ${_exchangeRates[to]?.toStringAsFixed(2) ?? 'N/A'} $to",
+                        ),
+                        trailing: IconButton(
+                          icon: const Icon(Icons.delete, color: Colors.red),
+                          onPressed: () async {
+                            final prefs = await SharedPreferences.getInstance();
+                            setState(() {
+                              _favorites.removeAt(index);
+                              prefs.setStringList('favorites', _favorites);
+                            });
+                          },
                         ),
                       ),
                     );
@@ -348,7 +366,7 @@ class _CurrencyConverterPageState extends State<CurrencyConverterPage> {
                 ),
               ],
 
-              // History Section
+              // ---------------- HISTORY ----------------
               const Divider(height: 32),
               Row(
                 mainAxisAlignment: MainAxisAlignment.spaceBetween,
