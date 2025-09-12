@@ -20,6 +20,7 @@ class _CurrencyConverterPageState extends State<CurrencyConverterPage> {
   String _toCurrency = 'PKR';
   String _result = '';
   List<String> _history = [];
+  List<String> _favorites = []; // ⭐ favorite pairs
 
   final Map<String, String> _currencySymbols = {
     'USD': '\$',
@@ -39,8 +40,10 @@ class _CurrencyConverterPageState extends State<CurrencyConverterPage> {
   void initState() {
     super.initState();
     _loadHistory();
+    _loadFavorites(); // load favorites on startup
   }
 
+  // ------------------ HISTORY ------------------
   void _loadHistory() async {
     final prefs = await SharedPreferences.getInstance();
     setState(() {
@@ -64,6 +67,27 @@ class _CurrencyConverterPageState extends State<CurrencyConverterPage> {
     });
   }
 
+  // ------------------ FAVORITES ------------------
+  void _loadFavorites() async {
+    final prefs = await SharedPreferences.getInstance();
+    setState(() {
+      _favorites = prefs.getStringList('favorites') ?? [];
+    });
+  }
+
+  void _toggleFavorite(String pair) async {
+    final prefs = await SharedPreferences.getInstance();
+    setState(() {
+      if (_favorites.contains(pair)) {
+        _favorites.remove(pair);
+      } else {
+        _favorites.add(pair);
+      }
+      prefs.setStringList('favorites', _favorites);
+    });
+  }
+
+  // ------------------ CONVERSION ------------------
   void _convertCurrency() {
     final amount = double.tryParse(_amountController.text);
     if (amount == null) return;
@@ -113,6 +137,8 @@ class _CurrencyConverterPageState extends State<CurrencyConverterPage> {
 
   @override
   Widget build(BuildContext context) {
+    String currentPair = '$_fromCurrency-$_toCurrency';
+
     return Scaffold(
       appBar: AppBar(
         title: const Text('Currency Converter'),
@@ -125,11 +151,10 @@ class _CurrencyConverterPageState extends State<CurrencyConverterPage> {
       ),
       body: SafeArea(
         child: SingleChildScrollView(
-          //  Fix bottom overflow with scrolling
           padding: const EdgeInsets.all(16.0),
           child: Column(
             children: [
-              // Bold centered title
+              // Title
               const Padding(
                 padding: EdgeInsets.only(top: 10.0, bottom: 20.0),
                 child: Text(
@@ -154,34 +179,42 @@ class _CurrencyConverterPageState extends State<CurrencyConverterPage> {
               ),
               const SizedBox(height: 24),
 
-              //  Centered Currency Dropdown Row with spacing
-              Center(
-                child: Row(
-                  mainAxisSize: MainAxisSize.min,
-                  children: [
-                    _buildCurrencyDropdown(
-                      _fromCurrency,
-                      (val) => setState(() => _fromCurrency = val!),
-                    ),
-                    const SizedBox(width: 20), // extra spacing
-                    ElevatedButton(
-                      onPressed: _swapCurrencies,
-                      style: ElevatedButton.styleFrom(
-                        padding: const EdgeInsets.symmetric(
-                          horizontal: 16,
-                          vertical: 12,
-                        ),
-                        shape: const CircleBorder(),
+              // Dropdowns + Swap + Favorite
+              Row(
+                mainAxisSize: MainAxisSize.min,
+                children: [
+                  _buildCurrencyDropdown(
+                    _fromCurrency,
+                    (val) => setState(() => _fromCurrency = val!),
+                  ),
+                  const SizedBox(width: 10),
+                  ElevatedButton(
+                    onPressed: _swapCurrencies,
+                    style: ElevatedButton.styleFrom(
+                      padding: const EdgeInsets.symmetric(
+                        horizontal: 16,
+                        vertical: 12,
                       ),
-                      child: const Icon(Icons.swap_horiz),
+                      shape: const CircleBorder(),
                     ),
-                    const SizedBox(width: 20), // extra spacing
-                    _buildCurrencyDropdown(
-                      _toCurrency,
-                      (val) => setState(() => _toCurrency = val!),
+                    child: const Icon(Icons.swap_horiz),
+                  ),
+                  const SizedBox(width: 10),
+                  _buildCurrencyDropdown(
+                    _toCurrency,
+                    (val) => setState(() => _toCurrency = val!),
+                  ),
+                  const SizedBox(width: 10),
+                  IconButton(
+                    icon: Icon(
+                      _favorites.contains(currentPair)
+                          ? Icons.star
+                          : Icons.star_border,
+                      color: Colors.amber,
                     ),
-                  ],
-                ),
+                    onPressed: () => _toggleFavorite(currentPair),
+                  ),
+                ],
               ),
 
               const SizedBox(height: 24),
@@ -210,9 +243,40 @@ class _CurrencyConverterPageState extends State<CurrencyConverterPage> {
                     ),
                   ),
                 ),
+
+              // ---------------- FAVORITES ----------------
+              if (_favorites.isNotEmpty) ...[
+                const Divider(height: 32),
+                const Text(
+                  'Favorite Pairs',
+                  style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
+                ),
+                const SizedBox(height: 8),
+                ListView.builder(
+                  shrinkWrap: true,
+                  physics: const NeverScrollableScrollPhysics(),
+                  itemCount: _favorites.length,
+                  itemBuilder: (context, index) {
+                    final fav = _favorites[index].split('-');
+                    return Card(
+                      child: ListTile(
+                        leading: const Icon(Icons.star, color: Colors.amber),
+                        title: Text('${fav[0]} → ${fav[1]}'),
+                        onTap: () {
+                          setState(() {
+                            _fromCurrency = fav[0];
+                            _toCurrency = fav[1];
+                          });
+                        },
+                      ),
+                    );
+                  },
+                ),
+              ],
+
               const Divider(height: 32),
 
-              //  Conversion History Header with Clear Button
+              // ---------------- HISTORY ----------------
               Row(
                 mainAxisAlignment: MainAxisAlignment.spaceBetween,
                 children: [
@@ -232,7 +296,6 @@ class _CurrencyConverterPageState extends State<CurrencyConverterPage> {
               ),
               const SizedBox(height: 8),
 
-              //  History List
               if (_history.isEmpty)
                 Center(
                   child: Text(
@@ -242,7 +305,7 @@ class _CurrencyConverterPageState extends State<CurrencyConverterPage> {
                 )
               else
                 ListView.builder(
-                  shrinkWrap: true, // Works inside scroll view
+                  shrinkWrap: true,
                   physics: const NeverScrollableScrollPhysics(),
                   itemCount: _history.length,
                   itemBuilder:
