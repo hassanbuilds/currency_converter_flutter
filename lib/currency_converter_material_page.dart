@@ -86,7 +86,7 @@ class _CurrencyConverterPageState extends State<CurrencyConverterPage> {
       } else {
         _favorites.add(pair);
 
-        // ✅ Popup on add
+        //  Popup on add
         showDialog(
           context: context,
           builder:
