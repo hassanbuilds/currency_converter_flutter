@@ -15,7 +15,6 @@ This app allows users to convert between multiple currencies, toggle themes, and
 
 ---
 
-## 📸 Screenshots
 ## 📸 Screenshots  
 
 <p align="center">
