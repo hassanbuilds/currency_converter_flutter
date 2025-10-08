@@ -33,6 +33,6 @@ This app allows users to convert between multiple currencies, save their favorit
 ## 🛠️ Tech Stack
 - **Flutter** (Dart)
 - **SharedPreferences** for local storage
-- **Material Design** for U
+- **Material Design** for UI
 
 ---
