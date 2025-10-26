@@ -1,4 +1,3 @@
-// lib/presentation/widgets/conversion_result_card.dart
 import 'package:flutter/material.dart';
 
 class ConversionResultCard extends StatelessWidget {
