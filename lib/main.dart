@@ -1,10 +1,7 @@
 import 'package:courency_converter/presentation/viewmodels/currency_converter_viewmodels.dart';
 import 'package:flutter/material.dart';
-
 import 'package:provider/provider.dart';
-
 import 'presentation/views/currency_converter_screen.dart';
-
 import 'core/theme/app_theme.dart';
 
 void main() {
