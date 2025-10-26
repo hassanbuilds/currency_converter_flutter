@@ -14,10 +14,7 @@ class CurrencyChart extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final chartData = getDummyChartData(
-      fromCurrency,
-      toCurrency,
-    ); // ✅ Now it works
+    final chartData = getDummyChartData(fromCurrency, toCurrency);
 
     return Card(
       elevation: 4,
