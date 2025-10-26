@@ -1,5 +1,4 @@
 import 'package:courency_converter/data/repositories/currency_repository.dart';
-import '../../core/constants/currency_data.dart';
 import '../models/currecny_conversion.dart';
 
 class ConvertCurrencyUseCase {
