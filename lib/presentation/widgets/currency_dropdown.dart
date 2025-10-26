@@ -15,7 +15,7 @@ class CurrencyDropdown extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return DropdownButton<String>(
-      value: selectedCurrency, // ✅ must exist in exchangeRates.keys
+      value: selectedCurrency,
       underline: const SizedBox(),
       style: TextStyle(
         fontSize: 16,

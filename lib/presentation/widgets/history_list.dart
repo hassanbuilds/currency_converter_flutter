@@ -1,4 +1,3 @@
-// lib/presentation/widgets/history_list.dart
 import 'package:flutter/material.dart';
 
 class HistoryList extends StatelessWidget {

@@ -5,7 +5,7 @@ import 'package:provider/provider.dart';
 
 import 'presentation/views/currency_converter_screen.dart';
 
-import 'core/theme/app_theme.dart'; // your theme class
+import 'core/theme/app_theme.dart';
 
 void main() {
   runApp(const CurrencyConverterApp());
