@@ -1,4 +1,3 @@
-// lib/presentation/views/currency_converter_screen.dart
 import 'package:courency_converter/presentation/viewmodels/currency_converter_viewmodels.dart';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
@@ -6,7 +5,7 @@ import '../widgets/currency_dropdown.dart';
 import '../widgets/conversion_result_card.dart';
 import '../widgets/favorites_list.dart';
 import '../widgets/history_list.dart';
-import '../widgets/currency_chart.dart'; // ✅ new chart import
+import '../widgets/currency_chart.dart';
 
 class CurrencyConverterScreen extends StatelessWidget {
   const CurrencyConverterScreen({super.key});
@@ -48,7 +47,7 @@ class CurrencyConverterScreen extends StatelessWidget {
               children: [
                 const Text('From:', style: TextStyle(fontSize: 16)),
                 CurrencyDropdown(
-                  selectedCurrency: vm.fromCurrency, // ✅ fixed
+                  selectedCurrency: vm.fromCurrency,
                   onChanged: vm.setFromCurrency,
                   value: '',
                 ),
@@ -56,13 +55,13 @@ class CurrencyConverterScreen extends StatelessWidget {
             ),
             const SizedBox(height: 8),
 
-            // 🔹 To currency dropdown
+            //  To currency dropdown
             Row(
               mainAxisAlignment: MainAxisAlignment.spaceBetween,
               children: [
                 const Text('To:', style: TextStyle(fontSize: 16)),
                 CurrencyDropdown(
-                  selectedCurrency: vm.toCurrency, // ✅ fixed
+                  selectedCurrency: vm.toCurrency,
                   onChanged: vm.setToCurrency,
                   value: '',
                 ),
@@ -70,7 +69,7 @@ class CurrencyConverterScreen extends StatelessWidget {
             ),
             const SizedBox(height: 16),
 
-            // 🔹 Reverse button
+            //  Reverse button
             ElevatedButton.icon(
               onPressed: vm.reverseCurrencies,
               icon: const Icon(Icons.swap_vert),
@@ -81,11 +80,11 @@ class CurrencyConverterScreen extends StatelessWidget {
             ),
             const SizedBox(height: 16),
 
-            // 🔹 Conversion result card
+            //  Conversion result card
             ConversionResultCard(result: vm.result),
             const SizedBox(height: 16),
 
-            // 🔹 Add to favorites button
+            //  Add to favorites button
             ElevatedButton.icon(
               onPressed: vm.addToFavorites,
               icon: const Icon(Icons.star),
@@ -93,14 +92,14 @@ class CurrencyConverterScreen extends StatelessWidget {
             ),
             const SizedBox(height: 16),
 
-            // 🔹 Chart for currency trend
+            //  Chart for currency trend
             CurrencyChart(
               fromCurrency: vm.fromCurrency,
               toCurrency: vm.toCurrency,
             ),
             const SizedBox(height: 16),
 
-            // 🔹 Favorites list
+            //  Favorites list
             FavoritesList(
               favorites: vm.favorites,
               onRemove: (index) => vm.removeFavoriteAt(index),
@@ -108,7 +107,7 @@ class CurrencyConverterScreen extends StatelessWidget {
             ),
             const SizedBox(height: 24),
 
-            // 🔹 History list
+            //  History list
             HistoryList(history: vm.history, onClear: vm.clearHistory),
           ],
         ),
