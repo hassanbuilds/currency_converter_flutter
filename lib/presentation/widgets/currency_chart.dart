@@ -50,7 +50,7 @@ class CurrencyChart extends StatelessWidget {
                   ),
                   SizedBox(height: isTablet ? 24 : 16),
 
-                  /// ✅ Responsive chart container inside scrollable parent
+                  ///  Responsive chart container inside scrollable parent
                   SizedBox(
                     height:
                         constraints.maxHeight * 0.35 > 250
