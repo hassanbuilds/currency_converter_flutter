@@ -9,14 +9,23 @@ class ConversionResultCard extends StatelessWidget {
   Widget build(BuildContext context) {
     if (result.isEmpty) return const SizedBox.shrink();
 
+    final size = MediaQuery.of(context).size;
+    final isTablet = size.width > 600;
+
     return Card(
-      elevation: 4,
+      elevation: isTablet ? 6 : 4,
       shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+      margin: EdgeInsets.symmetric(
+        horizontal: isTablet ? size.width * 0.02 : 0,
+      ),
       child: Padding(
-        padding: const EdgeInsets.all(16.0),
+        padding: EdgeInsets.all(isTablet ? 24.0 : 16.0),
         child: Text(
           result,
-          style: const TextStyle(fontSize: 16, fontWeight: FontWeight.w500),
+          style: TextStyle(
+            fontSize: isTablet ? 22 : 16,
+            fontWeight: FontWeight.w500,
+          ),
           textAlign: TextAlign.center,
         ),
       ),

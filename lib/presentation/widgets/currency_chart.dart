@@ -15,51 +15,76 @@ class CurrencyChart extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final chartData = getDummyChartData(fromCurrency, toCurrency);
+    final size = MediaQuery.of(context).size;
+    final isTablet = size.width > 600;
 
-    return Card(
-      elevation: 4,
-      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
-      child: Padding(
-        padding: const EdgeInsets.all(16.0),
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            Text(
-              "Exchange Rate Trend: $fromCurrency → $toCurrency (Last 7 Days)",
-              style: const TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
+    return LayoutBuilder(
+      builder: (context, constraints) {
+        return SingleChildScrollView(
+          physics: const BouncingScrollPhysics(),
+          child: Card(
+            elevation: isTablet ? 6 : 4,
+            shape: RoundedRectangleBorder(
+              borderRadius: BorderRadius.circular(16),
             ),
-            const SizedBox(height: 8),
-            Text(
-              "1 $fromCurrency = ${chartData.last.toStringAsFixed(2)} $toCurrency",
-              style: const TextStyle(fontSize: 14),
+            margin: EdgeInsets.symmetric(
+              horizontal: isTablet ? size.width * 0.02 : 0,
+              vertical: 12,
             ),
-            const SizedBox(height: 16),
-            SizedBox(
-              height: 200,
-              child: LineChart(
-                LineChartData(
-                  gridData: FlGridData(show: false),
-                  titlesData: FlTitlesData(show: false),
-                  borderData: FlBorderData(show: false),
-                  lineBarsData: [
-                    LineChartBarData(
-                      isCurved: true,
-                      color: Colors.blue,
-                      barWidth: 3,
-                      spots:
-                          chartData
-                              .asMap()
-                              .entries
-                              .map((e) => FlSpot(e.key.toDouble(), e.value))
-                              .toList(),
+            child: Padding(
+              padding: EdgeInsets.all(isTablet ? 24.0 : 16.0),
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Text(
+                    "Exchange Rate Trend: $fromCurrency → $toCurrency (Last 7 Days)",
+                    style: TextStyle(
+                      fontSize: isTablet ? 20 : 16,
+                      fontWeight: FontWeight.bold,
                     ),
-                  ],
-                ),
+                  ),
+                  SizedBox(height: isTablet ? 12 : 8),
+                  Text(
+                    "1 $fromCurrency = ${chartData.last.toStringAsFixed(2)} $toCurrency",
+                    style: TextStyle(fontSize: isTablet ? 16 : 14),
+                  ),
+                  SizedBox(height: isTablet ? 24 : 16),
+
+                  /// ✅ Responsive chart container inside scrollable parent
+                  SizedBox(
+                    height:
+                        constraints.maxHeight * 0.35 > 250
+                            ? 250
+                            : constraints.maxHeight * 0.35,
+                    child: LineChart(
+                      LineChartData(
+                        gridData: FlGridData(show: false),
+                        titlesData: FlTitlesData(show: false),
+                        borderData: FlBorderData(show: false),
+                        lineBarsData: [
+                          LineChartBarData(
+                            isCurved: true,
+                            color: Colors.blue,
+                            barWidth: isTablet ? 4 : 3,
+                            spots:
+                                chartData
+                                    .asMap()
+                                    .entries
+                                    .map(
+                                      (e) => FlSpot(e.key.toDouble(), e.value),
+                                    )
+                                    .toList(),
+                          ),
+                        ],
+                      ),
+                    ),
+                  ),
+                ],
               ),
             ),
-          ],
-        ),
-      ),
+          ),
+        );
+      },
     );
   }
 }

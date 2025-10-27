@@ -19,7 +19,10 @@ class CurrencyConverterApp extends StatelessWidget {
         builder: (context, vm, _) {
           return MaterialApp(
             debugShowCheckedModeBanner: false,
-            theme: vm.isDarkMode ? AppTheme.darkTheme : AppTheme.lightTheme,
+            theme:
+                vm.isDarkMode
+                    ? AppTheme.darkTheme(context)
+                    : AppTheme.lightTheme(context),
             home: const CurrencyConverterScreen(),
           );
         },
