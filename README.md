@@ -34,5 +34,6 @@ This app allows users to convert between multiple currencies, save their favorit
 - **Flutter** (Dart)
 - **SharedPreferences** for local storage
 - **Material Design** for UI
+- Provider (Statemangment) is used in this app
 
 ---
