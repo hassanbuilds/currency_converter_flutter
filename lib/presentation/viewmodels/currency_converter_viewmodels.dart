@@ -1,9 +1,7 @@
-import 'package:courency_converter/domain/models/currecny_conversion.dart';
 import 'package:flutter/material.dart';
 import '../../../core/constants/currency_data.dart';
 import '../../../data/local/shared_prefs_service.dart';
 import '../../../data/repositories/currency_repository.dart';
-import '../../../domain/usecases/convert_currency_usecase.dart';
 
 class CurrencyConverterViewModel extends ChangeNotifier {
   // ---------------- CONTROLLERS ----------------
@@ -18,13 +16,16 @@ class CurrencyConverterViewModel extends ChangeNotifier {
   List<String> history = [];
   List<String> favorites = [];
 
+  // ---------------- CHART ----------------
+  List<double> chartData = [];
+  bool isChartLoading = false;
+  String? chartError;
+
   final SharedPrefsService _prefsService = SharedPrefsService();
   late final CurrencyRepository _repository;
-  late final ConvertCurrencyUseCase _convertUseCase;
 
   CurrencyConverterViewModel() {
     _repository = CurrencyRepository();
-    _convertUseCase = ConvertCurrencyUseCase(_repository);
     _init();
   }
 
@@ -32,6 +33,7 @@ class CurrencyConverterViewModel extends ChangeNotifier {
   Future<void> _init() async {
     await _loadHistory();
     await _loadFavorites();
+    await updateConversion(); // fetch live rates on init
   }
 
   // ---------------- THEME ----------------
@@ -41,7 +43,7 @@ class CurrencyConverterViewModel extends ChangeNotifier {
   }
 
   // ---------------- CONVERSION ----------------
-  void updateConversion() {
+  Future<void> updateConversion() async {
     final amount = double.tryParse(amountController.text);
     if (amount == null) {
       result = '';
@@ -49,27 +51,61 @@ class CurrencyConverterViewModel extends ChangeNotifier {
       return;
     }
 
-    final conversion = CurrencyConversion(
-      fromCurrency: fromCurrency,
-      toCurrency: toCurrency,
-      amount: amount,
-      result: null,
-    );
+    isChartLoading = true;
+    chartError = null;
+    notifyListeners();
 
-    final converted = _convertUseCase.execute(
-      conversion.fromCurrency,
-      conversion.toCurrency,
-      conversion.amount,
-    );
-    result =
-        '${amount.toStringAsFixed(2)} ${currencySymbols[fromCurrency]} = '
-        '${converted.toStringAsFixed(2)} ${currencySymbols[toCurrency]}';
+    try {
+      // Always fetch live rates first
+      final rates = await _repository.getExchangeRates();
 
-    _saveToHistory(
-      '${currencySymbols[fromCurrency]}$amount $fromCurrency → '
-      '${currencySymbols[toCurrency]}${converted.toStringAsFixed(2)} $toCurrency',
-    );
+      final converted = _repository.convert(
+        amount: amount,
+        from: fromCurrency,
+        to: toCurrency,
+        rates: rates,
+      );
 
+      result =
+          '${amount.toStringAsFixed(2)} ${currencySymbols[fromCurrency]} = '
+          '${converted.toStringAsFixed(2)} ${currencySymbols[toCurrency]}';
+
+      _saveToHistory(
+        '${currencySymbols[fromCurrency]}$amount $fromCurrency → '
+        '${currencySymbols[toCurrency]}${converted.toStringAsFixed(2)} $toCurrency',
+      );
+
+      // ---------------- CHART FIX ----------------
+      final liveRate = _repository.convert(
+        amount: 1.0,
+        from: fromCurrency,
+        to: toCurrency,
+        rates: rates,
+      );
+
+      // Get existing chart history
+      chartData = await _repository.getChartData(
+        fromCurrency,
+        toCurrency,
+        rates: rates,
+      );
+
+      // Append new live rate
+      chartData.add(liveRate);
+      if (chartData.length > 30) chartData.removeAt(0); // keep last 30 points
+
+      // Save updated chart to SharedPreferences
+      await _repository.prefsService.saveDoubleList(
+        "${fromCurrency}_$toCurrency",
+        chartData,
+      );
+      // ------------------------------------------
+    } catch (e) {
+      result = 'Error fetching live rates';
+      chartError = e.toString();
+    }
+
+    isChartLoading = false;
     notifyListeners();
   }
 

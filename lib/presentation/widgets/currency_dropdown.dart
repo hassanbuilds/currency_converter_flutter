@@ -29,9 +29,21 @@ class CurrencyDropdown extends StatelessWidget {
         ),
         items:
             exchangeRates.keys.map((currency) {
+              final info = currencyInfo[currency];
               return DropdownMenuItem(
                 value: currency,
-                child: Text('$currency ${currencySymbols[currency]}'),
+                child: Row(
+                  children: [
+                    Text(info?['flag'] ?? ''), // flag emoji
+                    const SizedBox(width: 8),
+                    Expanded(
+                      child: Text(
+                        '$currency - ${info?['name'] ?? ''} (${currencySymbols[currency]})',
+                        overflow: TextOverflow.ellipsis,
+                      ),
+                    ),
+                  ],
+                ),
               );
             }).toList(),
         onChanged: onChanged,

@@ -43,9 +43,8 @@ class CurrencyConverterScreen extends StatelessWidget {
                 TextField(
                   controller: vm.amountController,
                   keyboardType: TextInputType.number,
-                  textInputAction: TextInputAction.done, //  Adds "Done" button
+                  textInputAction: TextInputAction.done,
                   onSubmitted: (value) {
-                    //  Trigger conversion + close keyboard
                     FocusScope.of(context).unfocus();
                     if (value.isNotEmpty) {
                       vm.updateConversion();
@@ -57,11 +56,11 @@ class CurrencyConverterScreen extends StatelessWidget {
                   ),
                 ),
 
-                //  Convert button (manual conversion trigger)
                 const SizedBox(height: 16),
+                //  Convert button
                 ElevatedButton.icon(
                   onPressed: () {
-                    FocusScope.of(context).unfocus(); //  Close keyboard
+                    FocusScope.of(context).unfocus();
                     vm.updateConversion();
                   },
                   icon: const Icon(Icons.currency_exchange),
@@ -140,7 +139,6 @@ class CurrencyConverterScreen extends StatelessWidget {
                     ),
 
                 const SizedBox(height: 16),
-
                 //  Reverse button
                 ElevatedButton.icon(
                   onPressed: vm.reverseCurrencies,
@@ -169,12 +167,15 @@ class CurrencyConverterScreen extends StatelessWidget {
                 ),
                 const SizedBox(height: 16),
 
-                //  Currency trend chart
+                //  Currency trend chart (LIVE)
                 SizedBox(
                   height: isTablet ? 300 : 200,
                   child: CurrencyChart(
                     fromCurrency: vm.fromCurrency,
                     toCurrency: vm.toCurrency,
+                    chartData: vm.chartData,
+                    isLoading: vm.isChartLoading,
+                    error: vm.chartError,
                   ),
                 ),
                 const SizedBox(height: 16),

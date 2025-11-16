@@ -36,9 +36,28 @@ class SharedPrefsService {
     await prefs.setStringList(_favoritesKey, favorites);
   }
 
+  // --------------------------
+  // NEW: Save List<double>
+  Future<void> saveDoubleList(String key, List<double> values) async {
+    final prefs = await SharedPreferences.getInstance();
+    List<String> stringList = values.map((e) => e.toString()).toList();
+    await prefs.setStringList(key, stringList);
+  }
+
+  // NEW: Load List<double>
+  Future<List<double>> getDoubleList(String key) async {
+    final prefs = await SharedPreferences.getInstance();
+    final stringList = prefs.getStringList(key) ?? [];
+    return stringList.map((e) => double.tryParse(e) ?? 0.0).toList();
+  }
+
+  // Existing placeholders / optional helpers
   loadList(String s) {}
 
   saveList(String s, List<String> history) {}
 
-  clearKey(String s) {}
+  clearKey(String s) async {
+    final prefs = await SharedPreferences.getInstance();
+    await prefs.remove(s);
+  }
 }

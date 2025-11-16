@@ -1,16 +1,41 @@
 import 'package:flutter/material.dart';
 
-class ConversionResultCard extends StatelessWidget {
+class ConversionResultCard extends StatefulWidget {
   final String result;
+  final double? previousValue; // optional, for dynamic color
 
-  const ConversionResultCard({super.key, required this.result});
+  const ConversionResultCard({
+    super.key,
+    required this.result,
+    this.previousValue,
+  });
 
   @override
+  State<ConversionResultCard> createState() => _ConversionResultCardState();
+}
+
+class _ConversionResultCardState extends State<ConversionResultCard> {
+  @override
   Widget build(BuildContext context) {
-    if (result.isEmpty) return const SizedBox.shrink();
+    if (widget.result.isEmpty) return const SizedBox.shrink();
 
     final size = MediaQuery.of(context).size;
     final isTablet = size.width > 600;
+
+    // Local helper function to extract numeric value from result string
+    double? extractResultValue(String result) {
+      final match = RegExp(r'=\s*([\d.]+)').firstMatch(result);
+      if (match != null) return double.tryParse(match.group(1)!);
+      return null;
+    }
+
+    // Determine dynamic color based on previous value
+    Color getResultColor() {
+      if (widget.previousValue == null) return Colors.black;
+      final currentValue = extractResultValue(widget.result);
+      if (currentValue == null) return Colors.black;
+      return currentValue >= widget.previousValue! ? Colors.green : Colors.red;
+    }
 
     return Card(
       elevation: isTablet ? 6 : 4,
@@ -20,13 +45,28 @@ class ConversionResultCard extends StatelessWidget {
       ),
       child: Padding(
         padding: EdgeInsets.all(isTablet ? 24.0 : 16.0),
-        child: Text(
-          result,
-          style: TextStyle(
-            fontSize: isTablet ? 22 : 16,
-            fontWeight: FontWeight.w500,
+        child: AnimatedSwitcher(
+          duration: const Duration(milliseconds: 500),
+          transitionBuilder: (child, animation) {
+            final offsetAnimation = Tween<Offset>(
+              begin: const Offset(0, 0.3),
+              end: Offset.zero,
+            ).animate(animation);
+            return FadeTransition(
+              opacity: animation,
+              child: SlideTransition(position: offsetAnimation, child: child),
+            );
+          },
+          child: Text(
+            widget.result,
+            key: ValueKey(widget.result),
+            style: TextStyle(
+              fontSize: isTablet ? 22 : 16,
+              fontWeight: FontWeight.w500,
+              color: getResultColor(),
+            ),
+            textAlign: TextAlign.center,
           ),
-          textAlign: TextAlign.center,
         ),
       ),
     );
