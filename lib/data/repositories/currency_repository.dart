@@ -1,4 +1,3 @@
-import 'dart:convert';
 import '../../core/constants/currency_data.dart';
 import '../remote/currency_api_service.dart';
 import '../local/shared_prefs_service.dart';
