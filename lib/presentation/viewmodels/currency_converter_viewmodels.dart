@@ -5,7 +5,6 @@ import '../../../data/repositories/currency_repository.dart';
 
 class CurrencyConverterViewModel extends ChangeNotifier {
   final TextEditingController amountController = TextEditingController();
-
   String fromCurrency = 'USD';
   String toCurrency = 'PKR';
   String result = '';
@@ -21,7 +20,7 @@ class CurrencyConverterViewModel extends ChangeNotifier {
   final SharedPrefsService _prefsService = SharedPrefsService();
   late final CurrencyRepository _repository;
 
-  Map<String, double> _cachedRates = {}; // Cached rates for instant conversion
+  Map<String, double> _cachedRates = {}; // memory cache
   List<String> supportedCurrencies = [];
 
   CurrencyConverterViewModel() {
@@ -29,42 +28,59 @@ class CurrencyConverterViewModel extends ChangeNotifier {
     _init();
   }
 
-  // Initialize ViewModel
+  /// Initialization
   Future<void> _init() async {
     await _loadHistory();
     await _loadFavorites();
 
-    try {
-      // Fetch exchange rates once and cache them
-      _cachedRates = await _repository.getExchangeRates();
-      supportedCurrencies = _cachedRates.keys.toList();
+    // 1️⃣ Load cached rates first for instant conversion
+    final cachedRates = await _repository.loadCachedRates();
+    if (cachedRates.isNotEmpty) {
+      _cachedRates = cachedRates;
+      supportedCurrencies = cachedRates.keys.toList();
 
-      // Adjust default currencies if not supported
       if (!supportedCurrencies.contains(fromCurrency))
         fromCurrency = supportedCurrencies.first;
       if (!supportedCurrencies.contains(toCurrency))
         toCurrency = supportedCurrencies.first;
 
-      // Set default amount if empty
       if (amountController.text.isEmpty) amountController.text = '1';
 
-      // Perform the first conversion after caching rates
+      // Instant conversion using cached data
+      await updateConversion();
+    }
+
+    // 2️⃣ Fetch latest rate for selected pair
+    try {
+      final pairRate = await _repository.fetchPairRate(
+        fromCurrency,
+        toCurrency,
+      );
+      _cachedRates[fromCurrency] = 1.0;
+      _cachedRates[toCurrency] = pairRate * _cachedRates[fromCurrency]!;
       await updateConversion();
     } catch (e) {
-      result = 'Error fetching rates';
-      chartData = [];
-      chartError = e.toString();
-      notifyListeners();
+      print("Selected pair fetch failed: $e");
     }
+
+    // 3️⃣ Fetch all rates in background for charts/dropdowns
+    _repository
+        .getExchangeRates()
+        .then((rates) {
+          _cachedRates = rates;
+          supportedCurrencies = rates.keys.toList();
+          notifyListeners();
+        })
+        .catchError((e) => print("Background fetch failed: $e"));
   }
 
-  // Toggle light/dark theme
+  /// Toggle theme
   void toggleTheme() {
     isDarkMode = !isDarkMode;
     notifyListeners();
   }
 
-  // Update conversion and chart
+  /// Update conversion & chart
   Future<void> updateConversion() async {
     final amount = double.tryParse(amountController.text);
     if (amount == null) {
@@ -74,7 +90,6 @@ class CurrencyConverterViewModel extends ChangeNotifier {
       return;
     }
 
-    // Prevent conversion if rates are not loaded yet
     if (_cachedRates.isEmpty) {
       result = 'Loading rates...';
       chartData = [];
@@ -89,13 +104,13 @@ class CurrencyConverterViewModel extends ChangeNotifier {
     try {
       if (!_cachedRates.containsKey(fromCurrency) ||
           !_cachedRates.containsKey(toCurrency)) {
-        result = 'Error: live rate not available';
-        chartError = 'Selected currency not supported by API';
+        result = 'Error: selected currency not supported';
+        chartError = 'Currency pair missing';
         chartData = [];
         return;
       }
 
-      // Perform conversion
+      // Conversion using cached pair or latest value
       final converted = _repository.convert(
         amount: amount,
         from: fromCurrency,
@@ -108,7 +123,7 @@ class CurrencyConverterViewModel extends ChangeNotifier {
           '${converted.toStringAsFixed(2)} ${currencySymbols[toCurrency]}';
 
       // Save conversion to history
-      _saveToHistory(
+      await _saveToHistory(
         '${currencySymbols[fromCurrency]}$amount $fromCurrency → ${currencySymbols[toCurrency]}${converted.toStringAsFixed(2)} $toCurrency',
       );
 
@@ -118,10 +133,8 @@ class CurrencyConverterViewModel extends ChangeNotifier {
         toCurrency,
         rates: _cachedRates,
       );
-
-      chartError = null;
     } catch (e) {
-      result = 'Error fetching live rates';
+      result = 'Error fetching conversion';
       chartError = e.toString();
       chartData = [];
     } finally {
@@ -130,21 +143,21 @@ class CurrencyConverterViewModel extends ChangeNotifier {
     }
   }
 
-  // Change base currency
+  /// Change base currency
   void setFromCurrency(String? value) {
     if (value == null || _cachedRates.isEmpty) return;
     fromCurrency = value;
     updateConversion();
   }
 
-  // Change target currency
+  /// Change target currency
   void setToCurrency(String? value) {
     if (value == null || _cachedRates.isEmpty) return;
     toCurrency = value;
     updateConversion();
   }
 
-  // Swap currencies
+  /// Swap currencies
   void reverseCurrencies() {
     final temp = fromCurrency;
     fromCurrency = toCurrency;
@@ -152,33 +165,33 @@ class CurrencyConverterViewModel extends ChangeNotifier {
     if (_cachedRates.isNotEmpty) updateConversion();
   }
 
-  // Load conversion history
+  /// Load conversion history
   Future<void> _loadHistory() async {
     history = await _prefsService.loadList('conversion_history');
     notifyListeners();
   }
 
-  // Save a new entry to history
+  /// Save a new entry to history
   Future<void> _saveToHistory(String entry) async {
     history.insert(0, entry);
     await _prefsService.saveList('conversion_history', history);
     notifyListeners();
   }
 
-  // Clear conversion history
+  /// Clear conversion history
   Future<void> clearHistory() async {
     await _prefsService.clearKey('conversion_history');
     history.clear();
     notifyListeners();
   }
 
-  // Load favorite currency pairs
+  /// Load favorite currency pairs
   Future<void> _loadFavorites() async {
     favorites = await _prefsService.loadList('favorites');
     notifyListeners();
   }
 
-  // Add current pair to favorites
+  /// Add current pair to favorites
   Future<void> addToFavorites() async {
     final pair = '$fromCurrency → $toCurrency';
     if (!favorites.contains(pair)) {
@@ -188,14 +201,14 @@ class CurrencyConverterViewModel extends ChangeNotifier {
     }
   }
 
-  // Remove favorite pair by index
+  /// Remove favorite pair by index
   Future<void> removeFavoriteAt(int index) async {
     favorites.removeAt(index);
     await _prefsService.saveList('favorites', favorites);
     notifyListeners();
   }
 
-  // Load a favorite pair
+  /// Load a favorite pair
   void loadFavoritePair(String pair) {
     final parts = pair.split('→');
     if (parts.length == 2) {

@@ -1,63 +1,81 @@
+import 'dart:convert';
 import 'package:shared_preferences/shared_preferences.dart';
 
 class SharedPrefsService {
   static const String _historyKey = 'conversion_history';
   static const String _favoritesKey = 'favorites';
 
-  // Load Conversion History
-  Future<List<String>> loadHistory() async {
+  // ----------------------------
+  // String helpers for caching
+  Future<void> saveString(String key, String value) async {
     final prefs = await SharedPreferences.getInstance();
-    return prefs.getStringList(_historyKey) ?? [];
+    await prefs.setString(key, value);
   }
 
-  // Save New Entry to History
-  Future<void> saveToHistory(String entry) async {
+  Future<String?> getString(String key) async {
     final prefs = await SharedPreferences.getInstance();
-    final history = prefs.getStringList(_historyKey) ?? [];
-    history.insert(0, entry);
-    await prefs.setStringList(_historyKey, history);
+    return prefs.getString(key);
   }
 
-  // Clear History
-  Future<void> clearHistory() async {
+  // ----------------------------
+  // Load/Save List<String>
+  Future<List<String>> loadList(String key) async {
     final prefs = await SharedPreferences.getInstance();
-    await prefs.remove(_historyKey);
+    return prefs.getStringList(key) ?? [];
   }
 
-  // Load Favorites
-  Future<List<String>> loadFavorites() async {
+  Future<void> saveList(String key, List<String> values) async {
     final prefs = await SharedPreferences.getInstance();
-    return prefs.getStringList(_favoritesKey) ?? [];
+    await prefs.setStringList(key, values);
   }
 
-  // Save Favorites
-  Future<void> saveFavorites(List<String> favorites) async {
+  Future<void> clearKey(String key) async {
     final prefs = await SharedPreferences.getInstance();
-    await prefs.setStringList(_favoritesKey, favorites);
+    await prefs.remove(key);
   }
 
-  // --------------------------
-  // NEW: Save List<double>
+  // ----------------------------
+  // Load/Save List<double> for charts
   Future<void> saveDoubleList(String key, List<double> values) async {
     final prefs = await SharedPreferences.getInstance();
     List<String> stringList = values.map((e) => e.toString()).toList();
     await prefs.setStringList(key, stringList);
   }
 
-  // NEW: Load List<double>
   Future<List<double>> getDoubleList(String key) async {
     final prefs = await SharedPreferences.getInstance();
     final stringList = prefs.getStringList(key) ?? [];
     return stringList.map((e) => double.tryParse(e) ?? 0.0).toList();
   }
 
-  // Existing placeholders / optional helpers
-  loadList(String s) {}
-
-  saveList(String s, List<String> history) {}
-
-  clearKey(String s) async {
+  // ----------------------------
+  // NEW: Load/Save Map<String, double>
+  Future<void> saveDoubleMap(String key, Map<String, double> map) async {
     final prefs = await SharedPreferences.getInstance();
-    await prefs.remove(s);
+    final jsonString = json.encode(map);
+    await prefs.setString(key, jsonString);
   }
+
+  Future<Map<String, double>> getDoubleMap(String key) async {
+    final prefs = await SharedPreferences.getInstance();
+    final jsonString = prefs.getString(key);
+    if (jsonString == null || jsonString.isEmpty) return {};
+    final Map<String, dynamic> jsonMap = json.decode(jsonString);
+    return jsonMap.map((k, v) => MapEntry(k, (v as num).toDouble()));
+  }
+
+  // ----------------------------
+  // Legacy aliases for convenience
+  Future<List<String>> loadHistory() => loadList(_historyKey);
+  Future<void> saveToHistory(String entry) async {
+    final list = await loadList(_historyKey);
+    list.insert(0, entry);
+    await saveList(_historyKey, list);
+  }
+
+  Future<void> clearHistory() async => clearKey(_historyKey);
+
+  Future<List<String>> loadFavorites() => loadList(_favoritesKey);
+  Future<void> saveFavorites(List<String> favorites) =>
+      saveList(_favoritesKey, favorites);
 }

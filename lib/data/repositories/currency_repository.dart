@@ -1,3 +1,4 @@
+import 'dart:convert';
 import '../remote/currency_api_service.dart';
 import '../local/shared_prefs_service.dart';
 import '../../core/utils/chart_helper.dart';
@@ -8,28 +9,56 @@ class CurrencyRepository {
   final ChartHelper chartHelper = ChartHelper();
 
   Map<String, double>? _cachedRates;
-  DateTime? _lastFetched;
+  static const String cacheKey = 'cached_rates';
 
-  /// Fetch live exchange rates from API, cache for 5 minutes
+  /// Load cached rates from SharedPreferences
+  Future<Map<String, double>> loadCachedRates() async {
+    _cachedRates = await prefsService.getDoubleMap(cacheKey);
+    return _cachedRates ?? {};
+  }
+
+  /// Save rates to SharedPreferences
+  Future<void> saveCachedRates(Map<String, double> rates) async {
+    await prefsService.saveDoubleMap(cacheKey, rates);
+    _cachedRates = rates;
+  }
+
+  /// Fetch only selected currency pair rate (fast first conversion)
+  Future<double> fetchPairRate(String from, String to) async {
+    // Load cached rates if not loaded
+    if (_cachedRates == null) {
+      _cachedRates = await loadCachedRates();
+    }
+
+    // Return instantly if pair is cached
+    if (_cachedRates != null &&
+        _cachedRates!.containsKey(from) &&
+        _cachedRates!.containsKey(to)) {
+      return _cachedRates![to]! / _cachedRates![from]!;
+    }
+
+    // Otherwise fetch from API
+    final rates = await apiService.fetchLatestRates();
+    await saveCachedRates(rates);
+
+    final pairRate = rates[to]! / rates[from]!;
+
+    // Save only this pair for chart history
+    await chartHelper.saveRate(from, to, pairRate);
+
+    return pairRate;
+  }
+
+  /// Fetch all rates in background (non-blocking)
   Future<Map<String, double>> getExchangeRates() async {
     try {
-      if (_cachedRates != null &&
-          _lastFetched != null &&
-          DateTime.now().difference(_lastFetched!) < Duration(minutes: 5)) {
-        return _cachedRates!;
-      }
-
       final rates = await apiService.fetchLatestRates();
-      _cachedRates = rates;
-      _lastFetched = DateTime.now();
-
+      await saveCachedRates(rates);
       await saveRatesHistory(rates);
       return rates;
     } catch (e) {
-      print("Error fetching rates: $e");
-      // fallback: return last cached rates if available
-      if (_cachedRates != null) return _cachedRates!;
-      return {};
+      print("Error fetching all rates: $e");
+      return _cachedRates ?? {};
     }
   }
 
@@ -46,7 +75,7 @@ class CurrencyRepository {
     return amount * (rates[to]! / rates[from]!);
   }
 
-  /// Save live rates into chart history
+  /// Save all rates to chart history
   Future<void> saveRatesHistory(Map<String, double> rates) async {
     for (String from in rates.keys) {
       for (String to in rates.keys) {
@@ -62,29 +91,17 @@ class CurrencyRepository {
     }
   }
 
-  /// Get chart history for a currency pair
+  /// Get chart history for a pair
   Future<List<double>> getChartData(
     String from,
     String to, {
     Map<String, double>? rates,
   }) async {
-    List<double> history = await prefsService.getDoubleList("${from}_$to");
-
-    history =
-        history
-            // ignore: unnecessary_type_check
-            .map((e) => e is double ? e : double.tryParse(e.toString()) ?? 0.0)
-            .toList();
-
-    if (history.isEmpty &&
-        rates != null &&
-        rates.containsKey(from) &&
-        rates.containsKey(to)) {
-      final liveRate = convert(amount: 1.0, from: from, to: to, rates: rates);
-      history = [liveRate];
-      await prefsService.saveDoubleList("${from}_$to", history);
-    }
-
+    final history = await chartHelper.getChartData(
+      from,
+      to,
+      rates: rates ?? _cachedRates ?? {},
+    );
     return history;
   }
 }
