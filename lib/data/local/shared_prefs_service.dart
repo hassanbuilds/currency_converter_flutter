@@ -64,7 +64,6 @@ class SharedPrefsService {
     return jsonMap.map((k, v) => MapEntry(k, (v as num).toDouble()));
   }
 
-  // ----------------------------
   // Legacy aliases for convenience
   Future<List<String>> loadHistory() => loadList(_historyKey);
   Future<void> saveToHistory(String entry) async {

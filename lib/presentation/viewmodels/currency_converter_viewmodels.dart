@@ -33,7 +33,7 @@ class CurrencyConverterViewModel extends ChangeNotifier {
     await _loadHistory();
     await _loadFavorites();
 
-    // 1️⃣ Load cached rates first for instant conversion
+    // Load cached rates first for instant conversion
     final cachedRates = await _repository.loadCachedRates();
     if (cachedRates.isNotEmpty) {
       _cachedRates = cachedRates;
@@ -52,7 +52,7 @@ class CurrencyConverterViewModel extends ChangeNotifier {
       await updateConversion();
     }
 
-    // 2️⃣ Fetch latest rate for selected pair
+    // Fetch latest rate for selected pair
     try {
       final pairRate = await _repository.fetchPairRate(
         fromCurrency,
@@ -66,7 +66,7 @@ class CurrencyConverterViewModel extends ChangeNotifier {
       print("Selected pair fetch failed: $e");
     }
 
-    // 3️⃣ Fetch all rates in background for charts/dropdowns
+    //  Fetch all rates in background for charts/dropdowns
     _repository
         .getExchangeRates()
         .then((rates) {
@@ -147,21 +147,21 @@ class CurrencyConverterViewModel extends ChangeNotifier {
     }
   }
 
-  /// Change base currency
+  // Change base currency
   void setFromCurrency(String? value) {
     if (value == null || _cachedRates.isEmpty) return;
     fromCurrency = value;
     updateConversion();
   }
 
-  /// Change target currency
+  // Change target currency
   void setToCurrency(String? value) {
     if (value == null || _cachedRates.isEmpty) return;
     toCurrency = value;
     updateConversion();
   }
 
-  /// Swap currencies
+  // Swap currencies
   void reverseCurrencies() {
     final temp = fromCurrency;
     fromCurrency = toCurrency;
@@ -169,33 +169,33 @@ class CurrencyConverterViewModel extends ChangeNotifier {
     if (_cachedRates.isNotEmpty) updateConversion();
   }
 
-  /// Load conversion history
+  // Load conversion history
   Future<void> _loadHistory() async {
     history = await _prefsService.loadList('conversion_history');
     notifyListeners();
   }
 
-  /// Save a new entry to history
+  //Save a new entry to history
   Future<void> _saveToHistory(String entry) async {
     history.insert(0, entry);
     await _prefsService.saveList('conversion_history', history);
     notifyListeners();
   }
 
-  /// Clear conversion history
+  //Clear conversion history
   Future<void> clearHistory() async {
     await _prefsService.clearKey('conversion_history');
     history.clear();
     notifyListeners();
   }
 
-  /// Load favorite currency pairs
+  // Load favorite currency pairs
   Future<void> _loadFavorites() async {
     favorites = await _prefsService.loadList('favorites');
     notifyListeners();
   }
 
-  /// Add current pair to favorites
+  // Add current pair to favorites
   Future<void> addToFavorites() async {
     final pair = '$fromCurrency → $toCurrency';
     if (!favorites.contains(pair)) {
@@ -205,14 +205,14 @@ class CurrencyConverterViewModel extends ChangeNotifier {
     }
   }
 
-  /// Remove favorite pair by index
+  //Remove favorite pair by index
   Future<void> removeFavoriteAt(int index) async {
     favorites.removeAt(index);
     await _prefsService.saveList('favorites', favorites);
     notifyListeners();
   }
 
-  /// Load a favorite pair
+  // Load a favorite pair
   void loadFavoritePair(String pair) {
     final parts = pair.split('→');
     if (parts.length == 2) {
