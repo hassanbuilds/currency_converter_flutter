@@ -39,7 +39,7 @@ class CurrencyConverterScreen extends StatelessWidget {
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.stretch,
               children: [
-                //   Amount input
+                // Amount input
                 TextField(
                   controller: vm.amountController,
                   keyboardType: TextInputType.number,
@@ -57,7 +57,7 @@ class CurrencyConverterScreen extends StatelessWidget {
                 ),
 
                 const SizedBox(height: 16),
-                //  Convert button
+                // Convert button
                 ElevatedButton.icon(
                   onPressed: () {
                     FocusScope.of(context).unfocus();
@@ -72,7 +72,7 @@ class CurrencyConverterScreen extends StatelessWidget {
                 ),
                 const SizedBox(height: 16),
 
-                //  From & To dropdowns
+                // From & To dropdowns
                 isTablet
                     ? Row(
                       children: [
@@ -88,7 +88,6 @@ class CurrencyConverterScreen extends StatelessWidget {
                               CurrencyDropdown(
                                 selectedCurrency: vm.fromCurrency,
                                 onChanged: vm.setFromCurrency,
-                                value: '',
                               ),
                             ],
                           ),
@@ -103,7 +102,6 @@ class CurrencyConverterScreen extends StatelessWidget {
                               CurrencyDropdown(
                                 selectedCurrency: vm.toCurrency,
                                 onChanged: vm.setToCurrency,
-                                value: '',
                               ),
                             ],
                           ),
@@ -119,7 +117,6 @@ class CurrencyConverterScreen extends StatelessWidget {
                             CurrencyDropdown(
                               selectedCurrency: vm.fromCurrency,
                               onChanged: vm.setFromCurrency,
-                              value: '',
                             ),
                           ],
                         ),
@@ -131,7 +128,6 @@ class CurrencyConverterScreen extends StatelessWidget {
                             CurrencyDropdown(
                               selectedCurrency: vm.toCurrency,
                               onChanged: vm.setToCurrency,
-                              value: '',
                             ),
                           ],
                         ),
@@ -139,7 +135,7 @@ class CurrencyConverterScreen extends StatelessWidget {
                     ),
 
                 const SizedBox(height: 16),
-                //  Reverse button
+                // Reverse button
                 ElevatedButton.icon(
                   onPressed: vm.reverseCurrencies,
                   icon: const Icon(Icons.swap_vert),
@@ -151,11 +147,11 @@ class CurrencyConverterScreen extends StatelessWidget {
                 ),
                 const SizedBox(height: 16),
 
-                //  Conversion result card
+                // Conversion result card
                 ConversionResultCard(result: vm.result),
                 const SizedBox(height: 16),
 
-                //  Add to favorites button
+                // Add to favorites button
                 ElevatedButton.icon(
                   onPressed: vm.addToFavorites,
                   icon: const Icon(Icons.star),
@@ -167,7 +163,7 @@ class CurrencyConverterScreen extends StatelessWidget {
                 ),
                 const SizedBox(height: 16),
 
-                //  Currency trend chart (LIVE)
+                // Currency trend chart (LIVE)
                 SizedBox(
                   height: isTablet ? 300 : 200,
                   child: CurrencyChart(
@@ -180,7 +176,7 @@ class CurrencyConverterScreen extends StatelessWidget {
                 ),
                 const SizedBox(height: 16),
 
-                //  Favorites list
+                // Favorites list
                 FavoritesList(
                   favorites: vm.favorites,
                   onRemove: (index) => vm.removeFavoriteAt(index),
@@ -188,7 +184,7 @@ class CurrencyConverterScreen extends StatelessWidget {
                 ),
                 const SizedBox(height: 24),
 
-                //  History list
+                // History list
                 HistoryList(history: vm.history, onClear: vm.clearHistory),
               ],
             ),

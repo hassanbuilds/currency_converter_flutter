@@ -9,7 +9,6 @@ class CurrencyDropdown extends StatelessWidget {
     super.key,
     required this.selectedCurrency,
     required this.onChanged,
-    required String value,
   });
 
   @override
@@ -28,7 +27,7 @@ class CurrencyDropdown extends StatelessWidget {
           color: Theme.of(context).textTheme.bodyLarge?.color,
         ),
         items:
-            exchangeRates.keys.map((currency) {
+            currencyInfo.keys.map((currency) {
               final info = currencyInfo[currency];
               return DropdownMenuItem(
                 value: currency,

@@ -2,35 +2,38 @@ import 'dart:convert';
 import 'package:http/http.dart' as http;
 
 class CurrencyApiService {
-  static const String _baseUrl = "https://api.freecurrencyapi.com/v1/latest";
-  static const String _apiKey =
-      "fca_live_UfrcgGfKm1u1q3jPqQvEZoo1PjXXsv5Ym5PvvEfB";
+  static const String _baseUrl =
+      "https://api.currencyfreaks.com/v2.0/rates/latest";
+  static const String _apiKey = "8e52bf806547426492687c4067a48cdb";
 
-  Future<Map<String, dynamic>> fetchLatestRates() async {
+  Future<Map<String, double>> fetchLatestRates() async {
     final url = Uri.parse("$_baseUrl?apikey=$_apiKey");
 
     try {
-      final response = await http.get(url);
+      final response = await http.get(url).timeout(const Duration(seconds: 10));
 
       if (response.statusCode == 200) {
         final jsonBody = jsonDecode(response.body);
-        if (jsonBody == null || jsonBody.isEmpty) {
-          throw Exception("Empty response from API");
+
+        if (jsonBody['rates'] == null) {
+          throw Exception("Invalid API response: missing 'rates'");
         }
-        return jsonBody;
-      } else if (response.statusCode == 400) {
-        throw Exception("Bad request — incorrect parameters");
-      } else if (response.statusCode == 401) {
-        throw Exception("Unauthorized — API key issue");
-      } else if (response.statusCode == 404) {
-        throw Exception("Endpoint not found");
-      } else if (response.statusCode == 500) {
-        throw Exception("API Server down");
+
+        // Convert rates from String -> double
+        final rates = Map<String, double>.from(
+          (jsonBody['rates'] as Map<String, dynamic>).map(
+            (k, v) => MapEntry(k, double.parse(v.toString())),
+          ),
+        );
+
+        return rates;
       } else {
-        throw Exception("Unexpected status: ${response.statusCode}");
+        throw Exception(
+          "HTTP ${response.statusCode}: ${response.reasonPhrase}",
+        );
       }
     } catch (e) {
-      throw Exception("Network error: $e");
+      throw Exception("Network/API error: $e");
     }
   }
 }
