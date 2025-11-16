@@ -39,10 +39,12 @@ class CurrencyConverterViewModel extends ChangeNotifier {
       _cachedRates = cachedRates;
       supportedCurrencies = cachedRates.keys.toList();
 
-      if (!supportedCurrencies.contains(fromCurrency))
+      if (!supportedCurrencies.contains(fromCurrency)) {
         fromCurrency = supportedCurrencies.first;
-      if (!supportedCurrencies.contains(toCurrency))
+      }
+      if (!supportedCurrencies.contains(toCurrency)) {
         toCurrency = supportedCurrencies.first;
+      }
 
       if (amountController.text.isEmpty) amountController.text = '1';
 
@@ -60,6 +62,7 @@ class CurrencyConverterViewModel extends ChangeNotifier {
       _cachedRates[toCurrency] = pairRate * _cachedRates[fromCurrency]!;
       await updateConversion();
     } catch (e) {
+      // ignore: avoid_print
       print("Selected pair fetch failed: $e");
     }
 
@@ -71,6 +74,7 @@ class CurrencyConverterViewModel extends ChangeNotifier {
           supportedCurrencies = rates.keys.toList();
           notifyListeners();
         })
+        // ignore: invalid_return_type_for_catch_error, avoid_print
         .catchError((e) => print("Background fetch failed: $e"));
   }
 
