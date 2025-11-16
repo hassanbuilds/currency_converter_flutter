@@ -1,4 +1,3 @@
-import '../../core/constants/currency_data.dart';
 import '../remote/currency_api_service.dart';
 import '../local/shared_prefs_service.dart';
 import '../../core/utils/chart_helper.dart';
@@ -73,6 +72,7 @@ class CurrencyRepository {
 
     history =
         history
+            // ignore: unnecessary_type_check
             .map((e) => e is double ? e : double.tryParse(e.toString()) ?? 0.0)
             .toList();
 

@@ -12,6 +12,7 @@ class ChartHelper {
     List<double> history = await _prefsService.getDoubleList("${from}_$to");
     history =
         history
+            // ignore: unnecessary_type_check
             .map((e) => e is double ? e : double.tryParse(e.toString()) ?? 0.0)
             .toList();
 
@@ -23,6 +24,7 @@ class ChartHelper {
       reverseHistory =
           reverseHistory
               .map(
+                // ignore: unnecessary_type_check
                 (e) => e is double ? e : double.tryParse(e.toString()) ?? 0.0,
               )
               .toList();
@@ -52,6 +54,7 @@ class ChartHelper {
     List<double> history = await _prefsService.getDoubleList(key);
     history =
         history
+            // ignore: unnecessary_type_check
             .map((e) => e is double ? e : double.tryParse(e.toString()) ?? 0.0)
             .toList();
 
