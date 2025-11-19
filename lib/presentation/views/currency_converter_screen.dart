@@ -6,6 +6,10 @@ import '../widgets/conversion_result_card.dart';
 import '../widgets/favorites_list.dart';
 import '../widgets/history_list.dart';
 import '../widgets/currency_chart.dart';
+import '../widgets/amount_input.dart';
+import '../widgets/convert_button.dart';
+import '../widgets/reverse_switch.dart';
+import '../widgets/loading_indicator.dart';
 
 class CurrencyConverterScreen extends StatelessWidget {
   const CurrencyConverterScreen({super.key});
@@ -39,36 +43,14 @@ class CurrencyConverterScreen extends StatelessWidget {
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.stretch,
               children: [
-                TextField(
-                  controller: vm.amountController,
-                  keyboardType: TextInputType.number,
-                  textInputAction: TextInputAction.done,
-                  onSubmitted: (value) {
-                    FocusScope.of(context).unfocus();
-                    if (value.isNotEmpty) {
-                      vm.updateConversion();
-                    }
-                  },
-                  decoration: const InputDecoration(
-                    labelText: 'Enter Amount',
-                    border: OutlineInputBorder(),
-                  ),
-                ),
+                // Step 2: Use AmountInput widget
+                const AmountInput(),
 
                 const SizedBox(height: 16),
-                // Convert button
-                ElevatedButton.icon(
-                  onPressed: () {
-                    FocusScope.of(context).unfocus();
-                    vm.updateConversion();
-                  },
-                  icon: const Icon(Icons.currency_exchange),
-                  label: const Text('Convert'),
-                  style: ElevatedButton.styleFrom(
-                    padding: EdgeInsets.symmetric(vertical: isTablet ? 16 : 12),
-                    textStyle: TextStyle(fontSize: isTablet ? 18 : 14),
-                  ),
-                ),
+
+                // Step 2: Use ConvertButton widget
+                ConvertButton(isTablet: isTablet),
+
                 const SizedBox(height: 16),
 
                 // From & To dropdowns
@@ -134,20 +116,18 @@ class CurrencyConverterScreen extends StatelessWidget {
                     ),
 
                 const SizedBox(height: 16),
-                // Reverse button
-                ElevatedButton.icon(
+
+                // Step 2: Use ReverseSwitch widget
+                ReverseSwitch(
                   onPressed: vm.reverseCurrencies,
-                  icon: const Icon(Icons.swap_vert),
-                  label: const Text('Reverse'),
-                  style: ElevatedButton.styleFrom(
-                    padding: EdgeInsets.symmetric(vertical: isTablet ? 16 : 12),
-                    textStyle: TextStyle(fontSize: isTablet ? 18 : 14),
-                  ),
+                  isTablet: isTablet,
                 ),
+
                 const SizedBox(height: 16),
 
                 // Conversion result card
                 ConversionResultCard(result: vm.result),
+
                 const SizedBox(height: 16),
 
                 // Add to favorites button
@@ -160,19 +140,23 @@ class CurrencyConverterScreen extends StatelessWidget {
                     textStyle: TextStyle(fontSize: isTablet ? 18 : 14),
                   ),
                 ),
+
                 const SizedBox(height: 16),
 
-                // Currency trend chart
-                SizedBox(
-                  height: isTablet ? 300 : 200,
-                  child: CurrencyChart(
-                    fromCurrency: vm.fromCurrency,
-                    toCurrency: vm.toCurrency,
-                    chartData: vm.chartData,
-                    isLoading: vm.isChartLoading,
-                    error: vm.chartError,
-                  ),
-                ),
+                // Currency trend chart with optional loading indicator
+                vm.isChartLoading
+                    ? const LoadingIndicator(size: 60)
+                    : SizedBox(
+                      height: isTablet ? 300 : 200,
+                      child: CurrencyChart(
+                        fromCurrency: vm.fromCurrency,
+                        toCurrency: vm.toCurrency,
+                        chartData: vm.chartData,
+                        isLoading: vm.isChartLoading,
+                        error: vm.chartError,
+                      ),
+                    ),
+
                 const SizedBox(height: 16),
 
                 // Favorites list
@@ -181,6 +165,7 @@ class CurrencyConverterScreen extends StatelessWidget {
                   onRemove: (index) => vm.removeFavoriteAt(index),
                   onTap: (pair) => vm.loadFavoritePair(pair),
                 ),
+
                 const SizedBox(height: 24),
 
                 // History list
