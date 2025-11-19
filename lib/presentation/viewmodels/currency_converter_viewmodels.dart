@@ -32,7 +32,7 @@ class CurrencyConverterViewModel extends ChangeNotifier {
 
   // ------------------ Initialization ------------------
   Future<void> _init() async {
-    // 1️⃣ Load local data quickly (history, favorites, cached rates)
+    // Load local data quickly (history, favorites, cached rates)
     final results = await Future.wait([
       _prefsService.loadList('conversion_history'),
       _prefsService.loadList('favorites'),
@@ -57,12 +57,12 @@ class CurrencyConverterViewModel extends ChangeNotifier {
 
     notifyListeners(); // only once after local load
 
-    // 2️⃣ Instant conversion using cached data
+    // Instant conversion using cached data
     if (_cachedRates.isNotEmpty) {
       updateConversion(loadChart: false);
     }
 
-    // 3️⃣ Background fetches (non-blocking)
+    // Background fetches (non-blocking)
     _fetchLatestPairRate();
     _fetchAllRatesForCharts();
   }
