@@ -2,7 +2,7 @@ import 'package:flutter/material.dart';
 
 class ConversionResultCard extends StatefulWidget {
   final String result;
-  final double? previousValue; // optional, for dynamic color
+  final double? previousValue;
 
   const ConversionResultCard({
     super.key,
