@@ -18,8 +18,36 @@ class CurrencyConverterScreen extends StatelessWidget {
   Widget build(BuildContext context) {
     final vm = context.watch<CurrencyConverterViewModel>();
     final size = MediaQuery.of(context).size;
-    final isTablet = size.width > 600;
-    final horizontalPadding = isTablet ? size.width * 0.1 : 16.0;
+
+    // Define breakpoints
+    final isTablet = size.width > 800; // wider screens
+    final isLargePhone = size.width > 450 && size.width <= 800;
+    final horizontalPadding =
+        isTablet
+            ? size.width * 0.1
+            : isLargePhone
+            ? 24.0
+            : 16.0;
+
+    final buttonPadding =
+        isTablet
+            ? 16.0
+            : isLargePhone
+            ? 14.0
+            : 12.0;
+    final buttonFontSize =
+        isTablet
+            ? 18.0
+            : isLargePhone
+            ? 16.0
+            : 14.0;
+
+    final chartHeight =
+        isTablet
+            ? 300.0
+            : isLargePhone
+            ? 250.0
+            : 200.0;
 
     return Scaffold(
       appBar: AppBar(
@@ -43,14 +71,10 @@ class CurrencyConverterScreen extends StatelessWidget {
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.stretch,
               children: [
-                // Step 2: Use AmountInput widget
                 const AmountInput(),
-
                 const SizedBox(height: 16),
 
-                // Step 2: Use ConvertButton widget
                 ConvertButton(isTablet: isTablet),
-
                 const SizedBox(height: 16),
 
                 // From & To dropdowns
@@ -114,40 +138,33 @@ class CurrencyConverterScreen extends StatelessWidget {
                         ),
                       ],
                     ),
-
                 const SizedBox(height: 16),
 
-                // Step 2: Use ReverseSwitch widget
                 ReverseSwitch(
                   onPressed: vm.reverseCurrencies,
                   isTablet: isTablet,
                 ),
-
                 const SizedBox(height: 16),
 
-                // Conversion result card
                 ConversionResultCard(result: vm.result),
-
                 const SizedBox(height: 16),
 
-                // Add to favorites button
                 ElevatedButton.icon(
                   onPressed: vm.addToFavorites,
                   icon: const Icon(Icons.star),
                   label: const Text('Add to Favorites'),
                   style: ElevatedButton.styleFrom(
-                    padding: EdgeInsets.symmetric(vertical: isTablet ? 16 : 12),
-                    textStyle: TextStyle(fontSize: isTablet ? 18 : 14),
+                    padding: EdgeInsets.symmetric(vertical: buttonPadding),
+                    textStyle: TextStyle(fontSize: buttonFontSize),
                   ),
                 ),
-
                 const SizedBox(height: 16),
 
-                // Currency trend chart with optional loading indicator
+                // Chart with loading indicator
                 vm.isChartLoading
                     ? const LoadingIndicator(size: 60)
                     : SizedBox(
-                      height: isTablet ? 300 : 200,
+                      height: chartHeight,
                       child: CurrencyChart(
                         fromCurrency: vm.fromCurrency,
                         toCurrency: vm.toCurrency,
@@ -156,19 +173,15 @@ class CurrencyConverterScreen extends StatelessWidget {
                         error: vm.chartError,
                       ),
                     ),
-
                 const SizedBox(height: 16),
 
-                // Favorites list
                 FavoritesList(
                   favorites: vm.favorites,
                   onRemove: (index) => vm.removeFavoriteAt(index),
                   onTap: (pair) => vm.loadFavoritePair(pair),
                 ),
-
                 const SizedBox(height: 24),
 
-                // History list
                 HistoryList(history: vm.history, onClear: vm.clearHistory),
               ],
             ),
