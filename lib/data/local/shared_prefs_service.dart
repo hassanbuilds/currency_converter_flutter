@@ -5,7 +5,6 @@ class SharedPrefsService {
   static const String _historyKey = 'conversion_history';
   static const String _favoritesKey = 'favorites';
 
-  // ----------------------------
   // String helpers for caching
   Future<void> saveString(String key, String value) async {
     final prefs = await SharedPreferences.getInstance();
@@ -17,7 +16,6 @@ class SharedPrefsService {
     return prefs.getString(key);
   }
 
-  // ----------------------------
   // Load/Save List<String>
   Future<List<String>> loadList(String key) async {
     final prefs = await SharedPreferences.getInstance();
@@ -34,7 +32,6 @@ class SharedPrefsService {
     await prefs.remove(key);
   }
 
-  // ----------------------------
   // Load/Save List<double> for charts
   Future<void> saveDoubleList(String key, List<double> values) async {
     final prefs = await SharedPreferences.getInstance();
@@ -48,7 +45,6 @@ class SharedPrefsService {
     return stringList.map((e) => double.tryParse(e) ?? 0.0).toList();
   }
 
-  // ----------------------------
   // NEW: Load/Save Map<String, double>
   Future<void> saveDoubleMap(String key, Map<String, double> map) async {
     final prefs = await SharedPreferences.getInstance();
