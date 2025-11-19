@@ -39,7 +39,6 @@ class CurrencyConverterScreen extends StatelessWidget {
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.stretch,
               children: [
-                // Amount input
                 TextField(
                   controller: vm.amountController,
                   keyboardType: TextInputType.number,
@@ -163,7 +162,7 @@ class CurrencyConverterScreen extends StatelessWidget {
                 ),
                 const SizedBox(height: 16),
 
-                // Currency trend chart (LIVE)
+                // Currency trend chart
                 SizedBox(
                   height: isTablet ? 300 : 200,
                   child: CurrencyChart(
