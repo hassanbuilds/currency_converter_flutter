@@ -1,5 +1,3 @@
-// core/constants/currency_data.dart
-
 /// Currency symbols for display in UI
 final Map<String, String> currencySymbols = {
   'USD': '\$',
