@@ -2,12 +2,11 @@ import 'package:courency_converter/data/repositories/currency_repository.dart';
 import '../models/currecny_conversion.dart';
 
 class ConvertCurrencyUseCase {
-  final CurrencyRepository _repository; //  store repository
+  final CurrencyRepository _repository;
 
-  ConvertCurrencyUseCase(this._repository); //  proper constructor
+  ConvertCurrencyUseCase(this._repository);
 
   double execute(String fromCurrency, String toCurrency, double amount) {
-    // Use repository to convert (better than using constants directly)
     return _repository.convert(
       amount: amount,
       from: fromCurrency,
