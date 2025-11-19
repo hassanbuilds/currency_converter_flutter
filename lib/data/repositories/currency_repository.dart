@@ -10,7 +10,7 @@ class CurrencyRepository {
   Map<String, double>? _cachedRates;
   static const String cacheKey = 'cached_rates';
 
-  /// Load cached rates from SharedPreferences
+  // Load cached rates from SharedPreferences
   Future<Map<String, double>> loadCachedRates() async {
     _cachedRates = await prefsService.getDoubleMap(cacheKey);
     return _cachedRates ?? {};
@@ -22,7 +22,7 @@ class CurrencyRepository {
     _cachedRates = rates;
   }
 
-  /// Fetch only selected currency pair rate (fast first conversion)
+  // Fetch only selected currency pair rate (fast first conversion)
   Future<double> fetchPairRate(String from, String to) async {
     // Load cached rates if not loaded
     if (_cachedRates == null) {
@@ -48,7 +48,7 @@ class CurrencyRepository {
     return pairRate;
   }
 
-  /// Fetch all rates in background (non-blocking)
+  // Fetch all rates in background (non-blocking)
   Future<Map<String, double>> getExchangeRates() async {
     try {
       final rates = await apiService.fetchLatestRates();
@@ -61,7 +61,7 @@ class CurrencyRepository {
     }
   }
 
-  /// Convert amount from one currency to another
+  // Convert amount from one currency to another
   double convert({
     required double amount,
     required String from,
@@ -74,7 +74,7 @@ class CurrencyRepository {
     return amount * (rates[to]! / rates[from]!);
   }
 
-  /// Save all rates to chart history
+  // Save all rates to chart history
   Future<void> saveRatesHistory(Map<String, double> rates) async {
     for (String from in rates.keys) {
       for (String to in rates.keys) {
@@ -90,7 +90,7 @@ class CurrencyRepository {
     }
   }
 
-  /// Get chart history for a pair
+  // Get chart history for a pair
   Future<List<double>> getChartData(
     String from,
     String to, {
