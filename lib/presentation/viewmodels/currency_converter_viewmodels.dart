@@ -4,6 +4,7 @@ import '../../../data/local/shared_prefs_service.dart';
 import '../../../data/repositories/currency_repository.dart';
 
 class CurrencyConverterViewModel extends ChangeNotifier {
+  // ------------------ Controllers & State ------------------
   final TextEditingController amountController = TextEditingController();
   String fromCurrency = 'USD';
   String toCurrency = 'PKR';
@@ -23,145 +24,163 @@ class CurrencyConverterViewModel extends ChangeNotifier {
   Map<String, double> _cachedRates = {}; // memory cache
   List<String> supportedCurrencies = [];
 
+  // ------------------ Constructor ------------------
   CurrencyConverterViewModel() {
     _repository = CurrencyRepository();
     _init();
   }
 
-  /// Initialization
+  // ------------------ Initialization ------------------
   Future<void> _init() async {
-    await _loadHistory();
-    await _loadFavorites();
+    // 1️⃣ Load local data quickly (history, favorites, cached rates)
+    final results = await Future.wait([
+      _prefsService.loadList('conversion_history'),
+      _prefsService.loadList('favorites'),
+      _repository.loadCachedRates(),
+    ]);
 
-    // Load cached rates first for instant conversion
-    final cachedRates = await _repository.loadCachedRates();
-    if (cachedRates.isNotEmpty) {
-      _cachedRates = cachedRates;
-      supportedCurrencies = cachedRates.keys.toList();
+    history = results[0] as List<String>;
+    favorites = results[1] as List<String>;
+    _cachedRates = results[2] as Map<String, double>;
+    supportedCurrencies = _cachedRates.keys.toList();
 
-      if (!supportedCurrencies.contains(fromCurrency)) {
-        fromCurrency = supportedCurrencies.first;
-      }
-      if (!supportedCurrencies.contains(toCurrency)) {
-        toCurrency = supportedCurrencies.first;
-      }
+    // Ensure default currencies exist
+    if (!supportedCurrencies.contains(fromCurrency) &&
+        supportedCurrencies.isNotEmpty) {
+      fromCurrency = supportedCurrencies.first;
+    }
+    if (!supportedCurrencies.contains(toCurrency) &&
+        supportedCurrencies.isNotEmpty) {
+      toCurrency = supportedCurrencies.first;
+    }
+    if (amountController.text.isEmpty) amountController.text = '1';
 
-      if (amountController.text.isEmpty) amountController.text = '1';
+    notifyListeners(); // only once after local load
 
-      // Instant conversion using cached data
-      await updateConversion();
+    // 2️⃣ Instant conversion using cached data
+    if (_cachedRates.isNotEmpty) {
+      updateConversion(loadChart: false);
     }
 
-    // Fetch latest rate for selected pair
+    // 3️⃣ Background fetches (non-blocking)
+    _fetchLatestPairRate();
+    _fetchAllRatesForCharts();
+  }
+
+  // Fetch selected currency pair rate
+  Future<void> _fetchLatestPairRate() async {
     try {
       final pairRate = await _repository.fetchPairRate(
         fromCurrency,
         toCurrency,
       );
       _cachedRates[fromCurrency] = 1.0;
-      _cachedRates[toCurrency] = pairRate * _cachedRates[fromCurrency]!;
-      await updateConversion();
+      _cachedRates[toCurrency] = pairRate;
+      updateConversion(); // update result & chart
     } catch (e) {
-      // ignore: avoid_print
       print("Selected pair fetch failed: $e");
     }
-
-    //  Fetch all rates in background for charts/dropdowns
-    _repository
-        .getExchangeRates()
-        .then((rates) {
-          _cachedRates = rates;
-          supportedCurrencies = rates.keys.toList();
-          notifyListeners();
-        })
-        // ignore: invalid_return_type_for_catch_error, avoid_print
-        .catchError((e) => print("Background fetch failed: $e"));
   }
 
-  /// Toggle theme
+  // Fetch all rates for dropdowns and charts
+  Future<void> _fetchAllRatesForCharts() async {
+    try {
+      final rates = await _repository.getExchangeRates();
+      _cachedRates = rates;
+      supportedCurrencies = rates.keys.toList();
+      notifyListeners(); // update UI after fetching all rates
+    } catch (e) {
+      print("Background fetch failed: $e");
+    }
+  }
+
+  // ------------------ Theme ------------------
   void toggleTheme() {
     isDarkMode = !isDarkMode;
     notifyListeners();
   }
 
-  /// Update conversion & chart
-  Future<void> updateConversion() async {
+  // ------------------ Conversion ------------------
+  Future<void> updateConversion({bool loadChart = true}) async {
     final amount = double.tryParse(amountController.text);
-    if (amount == null) {
-      result = '';
-      chartData = [];
+    if (amount == null || _cachedRates.isEmpty) {
+      result = amount == null ? '' : 'Loading rates...';
+      if (loadChart) {
+        chartData = [];
+        chartError = amount == null ? null : 'Rates not loaded';
+      }
       notifyListeners();
       return;
     }
 
-    if (_cachedRates.isEmpty) {
-      result = 'Loading rates...';
-      chartData = [];
+    if (loadChart) {
+      isChartLoading = true;
+      chartError = null;
       notifyListeners();
-      return;
     }
-
-    isChartLoading = true;
-    chartError = null;
-    notifyListeners();
 
     try {
       if (!_cachedRates.containsKey(fromCurrency) ||
           !_cachedRates.containsKey(toCurrency)) {
         result = 'Error: selected currency not supported';
-        chartError = 'Currency pair missing';
-        chartData = [];
-        return;
+        if (loadChart) {
+          chartError = 'Currency pair missing';
+          chartData = [];
+        }
+      } else {
+        final converted = _repository.convert(
+          amount: amount,
+          from: fromCurrency,
+          to: toCurrency,
+          rates: _cachedRates,
+        );
+
+        result =
+            '${amount.toStringAsFixed(2)} ${currencySymbols[fromCurrency]} = '
+            '${converted.toStringAsFixed(2)} ${currencySymbols[toCurrency]}';
+
+        // Save to history without extra notify
+        _saveToHistory(
+          '${currencySymbols[fromCurrency]}$amount $fromCurrency → ${currencySymbols[toCurrency]}${converted.toStringAsFixed(2)} $toCurrency',
+          notify: false,
+        );
+
+        // Load chart data only if needed
+        if (loadChart) {
+          chartData = await _repository.getChartData(
+            fromCurrency,
+            toCurrency,
+            rates: _cachedRates,
+          );
+        }
       }
-
-      // Conversion using cached pair or latest value
-      final converted = _repository.convert(
-        amount: amount,
-        from: fromCurrency,
-        to: toCurrency,
-        rates: _cachedRates,
-      );
-
-      result =
-          '${amount.toStringAsFixed(2)} ${currencySymbols[fromCurrency]} = '
-          '${converted.toStringAsFixed(2)} ${currencySymbols[toCurrency]}';
-
-      // Save conversion to history
-      await _saveToHistory(
-        '${currencySymbols[fromCurrency]}$amount $fromCurrency → ${currencySymbols[toCurrency]}${converted.toStringAsFixed(2)} $toCurrency',
-      );
-
-      // Load chart data
-      chartData = await _repository.getChartData(
-        fromCurrency,
-        toCurrency,
-        rates: _cachedRates,
-      );
     } catch (e) {
       result = 'Error fetching conversion';
-      chartError = e.toString();
-      chartData = [];
+      if (loadChart) {
+        chartError = e.toString();
+        chartData = [];
+      }
     } finally {
-      isChartLoading = false;
-      notifyListeners();
+      if (loadChart) {
+        isChartLoading = false;
+      }
+      notifyListeners(); // only once at the end
     }
   }
 
-  // Change base currency
+  // ------------------ Currency Selection ------------------
   void setFromCurrency(String? value) {
     if (value == null || _cachedRates.isEmpty) return;
     fromCurrency = value;
-    updateConversion();
+    updateConversion(loadChart: false);
   }
 
-  // Change target currency
   void setToCurrency(String? value) {
     if (value == null || _cachedRates.isEmpty) return;
     toCurrency = value;
-    updateConversion();
+    updateConversion(loadChart: false);
   }
 
-  // Swap currencies
   void reverseCurrencies() {
     final temp = fromCurrency;
     fromCurrency = toCurrency;
@@ -169,33 +188,29 @@ class CurrencyConverterViewModel extends ChangeNotifier {
     if (_cachedRates.isNotEmpty) updateConversion();
   }
 
-  // Load conversion history
-  Future<void> _loadHistory() async {
-    history = await _prefsService.loadList('conversion_history');
-    notifyListeners();
+  void loadFavoritePair(String pair) {
+    final parts = pair.split('→');
+    if (parts.length == 2) {
+      fromCurrency = parts[0].trim();
+      toCurrency = parts[1].trim();
+      updateConversion();
+    }
   }
 
-  //Save a new entry to history
-  Future<void> _saveToHistory(String entry) async {
+  // ------------------ History ------------------
+  Future<void> _saveToHistory(String entry, {bool notify = true}) async {
     history.insert(0, entry);
     await _prefsService.saveList('conversion_history', history);
-    notifyListeners();
+    if (notify) notifyListeners();
   }
 
-  //Clear conversion history
   Future<void> clearHistory() async {
     await _prefsService.clearKey('conversion_history');
     history.clear();
     notifyListeners();
   }
 
-  // Load favorite currency pairs
-  Future<void> _loadFavorites() async {
-    favorites = await _prefsService.loadList('favorites');
-    notifyListeners();
-  }
-
-  // Add current pair to favorites
+  // ------------------ Favorites ------------------
   Future<void> addToFavorites() async {
     final pair = '$fromCurrency → $toCurrency';
     if (!favorites.contains(pair)) {
@@ -205,20 +220,9 @@ class CurrencyConverterViewModel extends ChangeNotifier {
     }
   }
 
-  //Remove favorite pair by index
   Future<void> removeFavoriteAt(int index) async {
     favorites.removeAt(index);
     await _prefsService.saveList('favorites', favorites);
     notifyListeners();
-  }
-
-  // Load a favorite pair
-  void loadFavoritePair(String pair) {
-    final parts = pair.split('→');
-    if (parts.length == 2) {
-      fromCurrency = parts[0].trim();
-      toCurrency = parts[1].trim();
-      updateConversion();
-    }
   }
 }
