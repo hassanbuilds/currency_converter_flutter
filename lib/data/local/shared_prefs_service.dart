@@ -8,7 +8,7 @@ class SharedPrefsService {
   // In-memory cache to reduce writes
   final Map<String, dynamic> _cache = {};
 
-  // ------------------ String Helpers ------------------
+  // String Helpers
   Future<void> saveString(String key, String value) async {
     _cache[key] = value;
     final prefs = await SharedPreferences.getInstance();
@@ -23,7 +23,7 @@ class SharedPrefsService {
     return value;
   }
 
-  // ------------------ List<String> ------------------
+  // List<String>
   Future<List<String>> loadList(String key) async {
     if (_cache.containsKey(key)) return List<String>.from(_cache[key]);
     final prefs = await SharedPreferences.getInstance();
@@ -44,7 +44,7 @@ class SharedPrefsService {
     await prefs.remove(key);
   }
 
-  // ------------------ List<double> ------------------
+  // List<double>
   Future<void> saveDoubleList(String key, List<double> values) async {
     _cache[key] = values;
     final stringList = values.map((e) => e.toString()).toList();
@@ -62,7 +62,7 @@ class SharedPrefsService {
     return doubleList;
   }
 
-  // ------------------ Map<String, double> ------------------
+  //  Map<String, double>
   Future<void> saveDoubleMap(String key, Map<String, double> map) async {
     _cache[key] = map;
     final prefs = await SharedPreferences.getInstance();
@@ -81,7 +81,7 @@ class SharedPrefsService {
     return map;
   }
 
-  // ------------------ Legacy Aliases ------------------
+  // Legacy Aliases
   Future<List<String>> loadHistory() => loadList(_historyKey);
 
   Future<void> saveToHistory(String entry) async {
@@ -97,7 +97,7 @@ class SharedPrefsService {
   Future<void> saveFavorites(List<String> favorites) =>
       saveList(_favoritesKey, favorites);
 
-  // ------------------ Optional: flush cache ------------------
+  // Optional: flush cache
   Future<void> flush() async {
     final prefs = await SharedPreferences.getInstance();
     for (final entry in _cache.entries) {
