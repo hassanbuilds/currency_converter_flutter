@@ -45,7 +45,7 @@ class SharedPrefsService {
     return stringList.map((e) => double.tryParse(e) ?? 0.0).toList();
   }
 
-  // NEW: Load/Save Map<String, double>
+  // Load/Save Map<String, double>
   Future<void> saveDoubleMap(String key, Map<String, double> map) async {
     final prefs = await SharedPreferences.getInstance();
     final jsonString = json.encode(map);
