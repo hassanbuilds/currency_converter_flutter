@@ -16,10 +16,10 @@ class CurrencyRepository {
     return _cachedRates ?? {};
   }
 
-  /// Save rates to SharedPreferences
+  /// Save rates to SharedPreferences (bulk)
   Future<void> saveCachedRates(Map<String, double> rates) async {
-    await prefsService.saveDoubleMap(cacheKey, rates);
     _cachedRates = rates;
+    await prefsService.saveDoubleMap(cacheKey, rates); // only once
   }
 
   // Fetch only selected currency pair rate (fast first conversion)
@@ -53,7 +53,6 @@ class CurrencyRepository {
     try {
       final rates = await apiService.fetchLatestRates();
       await saveCachedRates(rates);
-      await saveRatesHistory(rates);
       return rates;
     } catch (e) {
       print("Error fetching all rates: $e");
@@ -68,26 +67,21 @@ class CurrencyRepository {
     required String to,
     Map<String, double>? rates,
   }) {
-    if (rates == null || !rates.containsKey(from) || !rates.containsKey(to)) {
+    final usedRates = rates ?? _cachedRates;
+    if (usedRates == null ||
+        !usedRates.containsKey(from) ||
+        !usedRates.containsKey(to)) {
       return 0.0;
     }
-    return amount * (rates[to]! / rates[from]!);
+    return amount * (usedRates[to]! / usedRates[from]!);
   }
 
-  // Save all rates to chart history
-  Future<void> saveRatesHistory(Map<String, double> rates) async {
-    for (String from in rates.keys) {
-      for (String to in rates.keys) {
-        if (from == to) continue;
-        final convertedRate = convert(
-          amount: 1.0,
-          from: from,
-          to: to,
-          rates: rates,
-        );
-        await chartHelper.saveRate(from, to, convertedRate);
-      }
-    }
+  // Save chart history for **only the recently converted pair** (O(1))
+  Future<void> saveRecentPairHistory(String from, String to) async {
+    if (_cachedRates == null) return;
+
+    final rate = convert(amount: 1.0, from: from, to: to, rates: _cachedRates);
+    await chartHelper.saveRate(from, to, rate);
   }
 
   // Get chart history for a pair
