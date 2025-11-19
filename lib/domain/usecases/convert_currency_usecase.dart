@@ -1,5 +1,5 @@
 import 'package:courency_converter/data/repositories/currency_repository.dart';
-import '../models/currecny_conversion.dart';
+import '../models/convert_currency.dart';
 
 class ConvertCurrencyUseCase {
   final CurrencyRepository _repository;
