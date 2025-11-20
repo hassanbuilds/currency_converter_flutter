@@ -8,6 +8,11 @@ class AmountInput extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final vm = context.watch<CurrencyConverterViewModel>();
+    final width = MediaQuery.of(context).size.width;
+
+    final bool isTablet = width > 600;
+    final double fontSize = isTablet ? 20 : (width < 360 ? 14 : 16);
+    final double verticalPadding = isTablet ? 18 : 14;
 
     return TextField(
       controller: vm.amountController,
@@ -15,14 +20,18 @@ class AmountInput extends StatelessWidget {
       textInputAction: TextInputAction.done,
       onSubmitted: (value) {
         FocusScope.of(context).unfocus();
-        if (value.isNotEmpty) {
-          vm.updateConversion();
-        }
+        if (value.isNotEmpty) vm.updateConversion();
       },
-      decoration: const InputDecoration(
+      decoration: InputDecoration(
         labelText: 'Enter Amount',
-        border: OutlineInputBorder(),
+        labelStyle: TextStyle(fontSize: fontSize),
+        contentPadding: EdgeInsets.symmetric(
+          vertical: verticalPadding,
+          horizontal: 16,
+        ),
+        border: const OutlineInputBorder(),
       ),
+      style: TextStyle(fontSize: fontSize),
     );
   }
 }
