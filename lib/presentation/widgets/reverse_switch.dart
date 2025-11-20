@@ -12,13 +12,22 @@ class ReverseSwitch extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return ElevatedButton.icon(
-      onPressed: onPressed,
-      icon: const Icon(Icons.swap_vert),
-      label: const Text('Reverse'),
-      style: ElevatedButton.styleFrom(
-        padding: EdgeInsets.symmetric(vertical: isTablet ? 16 : 12),
-        textStyle: TextStyle(fontSize: isTablet ? 18 : 14),
+    final width = MediaQuery.of(context).size.width;
+
+    final double fontSize = isTablet ? 20 : (width < 360 ? 14 : 16);
+    final double paddingY = isTablet ? 18 : 12;
+
+    return SizedBox(
+      width: double.infinity,
+      child: ElevatedButton.icon(
+        onPressed: onPressed,
+        icon: const Icon(Icons.swap_vert, size: 22),
+        label: const Text('Reverse'),
+        style: ElevatedButton.styleFrom(
+          padding: EdgeInsets.symmetric(vertical: paddingY),
+          textStyle: TextStyle(fontSize: fontSize),
+          minimumSize: Size(double.infinity, isTablet ? 60 : 48),
+        ),
       ),
     );
   }
