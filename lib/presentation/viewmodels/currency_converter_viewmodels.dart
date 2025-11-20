@@ -4,7 +4,7 @@ import '../../../data/local/shared_prefs_service.dart';
 import '../../../data/repositories/currency_repository.dart';
 
 class CurrencyConverterViewModel extends ChangeNotifier {
-  // ------------------ Controllers & State ------------------
+  // Controllers & State
   final TextEditingController amountController = TextEditingController();
   String fromCurrency = 'USD';
   String toCurrency = 'PKR';
@@ -24,13 +24,13 @@ class CurrencyConverterViewModel extends ChangeNotifier {
   Map<String, double> _cachedRates = {}; // memory cache
   List<String> supportedCurrencies = [];
 
-  // ------------------ Constructor ------------------
+  // Constructor
   CurrencyConverterViewModel() {
     _repository = CurrencyRepository();
     _init();
   }
 
-  // ------------------ Initialization ------------------
+  // Initialization
   Future<void> _init() async {
     // Load local data quickly (history, favorites, cached rates)
     final results = await Future.wait([
@@ -94,13 +94,13 @@ class CurrencyConverterViewModel extends ChangeNotifier {
     }
   }
 
-  // ------------------ Theme ------------------
+  // Theme
   void toggleTheme() {
     isDarkMode = !isDarkMode;
     notifyListeners();
   }
 
-  // ------------------ Conversion ------------------
+  // Conversion
   Future<void> updateConversion({bool loadChart = true}) async {
     final amount = double.tryParse(amountController.text);
     if (amount == null || _cachedRates.isEmpty) {
@@ -168,7 +168,7 @@ class CurrencyConverterViewModel extends ChangeNotifier {
     }
   }
 
-  // ------------------ Currency Selection ------------------
+  // Currency Selection
   void setFromCurrency(String? value) {
     if (value == null || _cachedRates.isEmpty) return;
     fromCurrency = value;
@@ -197,7 +197,7 @@ class CurrencyConverterViewModel extends ChangeNotifier {
     }
   }
 
-  // ------------------ History ------------------
+  // History
   Future<void> _saveToHistory(String entry, {bool notify = true}) async {
     history.insert(0, entry);
     await _prefsService.saveList('conversion_history', history);
@@ -210,7 +210,7 @@ class CurrencyConverterViewModel extends ChangeNotifier {
     notifyListeners();
   }
 
-  // ------------------ Favorites ------------------
+  // Favorites
   Future<void> addToFavorites() async {
     final pair = '$fromCurrency → $toCurrency';
     if (!favorites.contains(pair)) {
