@@ -10,12 +10,12 @@ class CurrencyRepository {
   Map<String, double>? _cachedRates;
   static const String cacheKey = 'cached_rates';
 
-  // ----------------- Helpers -----------------
+  //Helpers
   double getPairRate(String from, String to, Map<String, double> rates) {
     return rates[to]! / rates[from]!;
   }
 
-  // ---------------- Public Methods ----------------
+  // Public Methods
   Future<Map<String, double>> loadCachedRates() async {
     _cachedRates = await prefsService.getDoubleMap(cacheKey);
     return _cachedRates ?? {};
@@ -60,7 +60,9 @@ class CurrencyRepository {
     Map<String, double>? rates,
   }) {
     final usedRates = rates ?? _cachedRates;
-    if (usedRates == null || !usedRates.containsKey(from) || !usedRates.containsKey(to)) {
+    if (usedRates == null ||
+        !usedRates.containsKey(from) ||
+        !usedRates.containsKey(to)) {
       return 0.0;
     }
     return amount * getPairRate(from, to, usedRates);
@@ -77,6 +79,10 @@ class CurrencyRepository {
     String to, {
     Map<String, double>? rates,
   }) async {
-    return await chartHelper.getChartData(from, to, rates: rates ?? _cachedRates ?? {});
+    return await chartHelper.getChartData(
+      from,
+      to,
+      rates: rates ?? _cachedRates ?? {},
+    );
   }
 }
