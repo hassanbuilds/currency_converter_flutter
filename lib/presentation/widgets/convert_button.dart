@@ -10,17 +10,25 @@ class ConvertButton extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final vm = context.watch<CurrencyConverterViewModel>();
+    final width = MediaQuery.of(context).size.width;
 
-    return ElevatedButton.icon(
-      onPressed: () {
-        FocusScope.of(context).unfocus();
-        vm.updateConversion();
-      },
-      icon: const Icon(Icons.currency_exchange),
-      label: const Text('Convert'),
-      style: ElevatedButton.styleFrom(
-        padding: EdgeInsets.symmetric(vertical: isTablet ? 16 : 12),
-        textStyle: TextStyle(fontSize: isTablet ? 18 : 14),
+    final double fontSize = isTablet ? 20 : (width < 360 ? 14 : 16);
+    final double paddingY = isTablet ? 18 : 12;
+
+    return SizedBox(
+      width: double.infinity,
+      child: ElevatedButton.icon(
+        onPressed: () {
+          FocusScope.of(context).unfocus();
+          vm.updateConversion();
+        },
+        icon: const Icon(Icons.currency_exchange, size: 22),
+        label: Text('Convert'),
+        style: ElevatedButton.styleFrom(
+          padding: EdgeInsets.symmetric(vertical: paddingY),
+          textStyle: TextStyle(fontSize: fontSize),
+          minimumSize: Size(double.infinity, isTablet ? 60 : 48),
+        ),
       ),
     );
   }
