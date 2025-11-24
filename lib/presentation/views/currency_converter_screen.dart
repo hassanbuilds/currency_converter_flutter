@@ -1,4 +1,4 @@
-import 'package:courency_converter/presentation/viewmodels/currency_converter_viewmodels.dart';
+import 'package:courency_converter/presentation/viewmodels/currency_converter_provider.dart';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import '../widgets/currency_dropdown.dart';
@@ -10,25 +10,26 @@ import '../widgets/amount_input.dart';
 import '../widgets/convert_button.dart';
 import '../widgets/reverse_switch.dart';
 import '../widgets/loading_indicator.dart';
+import '../widgets/error_banner.dart';
+import '../widgets/offline_banner.dart';
 
 class CurrencyConverterScreen extends StatelessWidget {
   const CurrencyConverterScreen({super.key});
 
   @override
   Widget build(BuildContext context) {
-    final vm = context.watch<CurrencyConverterViewModel>();
+    final provider = context.watch<CurrencyConverterProvider>();
     final size = MediaQuery.of(context).size;
 
-    // Define breakpoints
-    final isTablet = size.width > 800; // wider screens
+    final isTablet = size.width > 800;
     final isLargePhone = size.width > 450 && size.width <= 800;
+
     final horizontalPadding =
         isTablet
             ? size.width * 0.1
             : isLargePhone
             ? 24.0
             : 16.0;
-
     final buttonPadding =
         isTablet
             ? 16.0
@@ -41,7 +42,6 @@ class CurrencyConverterScreen extends StatelessWidget {
             : isLargePhone
             ? 16.0
             : 14.0;
-
     final chartHeight =
         isTablet
             ? 300.0
@@ -55,8 +55,10 @@ class CurrencyConverterScreen extends StatelessWidget {
         centerTitle: true,
         actions: [
           IconButton(
-            icon: Icon(vm.isDarkMode ? Icons.light_mode : Icons.dark_mode),
-            onPressed: vm.toggleTheme,
+            icon: Icon(
+              provider.isDarkMode ? Icons.light_mode : Icons.dark_mode,
+            ),
+            onPressed: provider.toggleTheme,
           ),
         ],
       ),
@@ -71,86 +73,48 @@ class CurrencyConverterScreen extends StatelessWidget {
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.stretch,
               children: [
+                // Offline banner
+                if (!provider.isOnline)
+                  OfflineBanner(
+                    onRetry: provider.retryConnection,
+                    isRetrying: provider.isCheckingConnection,
+                  ),
+
+                // Error banner
+                if (provider.error != null)
+                  ErrorBanner(
+                    message: provider.error!,
+                    onDismiss: provider.clearError,
+                  ),
+
                 const AmountInput(),
                 const SizedBox(height: 16),
 
-                ConvertButton(isTablet: isTablet),
+                ConvertButton(
+                  isTablet: isTablet,
+                  onPressed: () {
+                    FocusScope.of(context).unfocus();
+                    provider.convertCurrency();
+                  },
+                  isLoading: provider.isLoading,
+                  isOffline: !provider.isOnline,
+                ),
                 const SizedBox(height: 16),
 
-                // From & To dropdowns
-                isTablet
-                    ? Row(
-                      children: [
-                        Expanded(
-                          child: Column(
-                            crossAxisAlignment: CrossAxisAlignment.start,
-                            children: [
-                              const Text(
-                                'From:',
-                                style: TextStyle(fontSize: 16),
-                              ),
-                              const SizedBox(height: 4),
-                              CurrencyDropdown(
-                                selectedCurrency: vm.fromCurrency,
-                                onChanged: vm.setFromCurrency,
-                              ),
-                            ],
-                          ),
-                        ),
-                        const SizedBox(width: 16),
-                        Expanded(
-                          child: Column(
-                            crossAxisAlignment: CrossAxisAlignment.start,
-                            children: [
-                              const Text('To:', style: TextStyle(fontSize: 16)),
-                              const SizedBox(height: 4),
-                              CurrencyDropdown(
-                                selectedCurrency: vm.toCurrency,
-                                onChanged: vm.setToCurrency,
-                              ),
-                            ],
-                          ),
-                        ),
-                      ],
-                    )
-                    : Column(
-                      children: [
-                        Row(
-                          mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                          children: [
-                            const Text('From:', style: TextStyle(fontSize: 16)),
-                            CurrencyDropdown(
-                              selectedCurrency: vm.fromCurrency,
-                              onChanged: vm.setFromCurrency,
-                            ),
-                          ],
-                        ),
-                        const SizedBox(height: 8),
-                        Row(
-                          mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                          children: [
-                            const Text('To:', style: TextStyle(fontSize: 16)),
-                            CurrencyDropdown(
-                              selectedCurrency: vm.toCurrency,
-                              onChanged: vm.setToCurrency,
-                            ),
-                          ],
-                        ),
-                      ],
-                    ),
+                _buildCurrencyDropdowns(provider, isTablet),
                 const SizedBox(height: 16),
 
                 ReverseSwitch(
-                  onPressed: vm.reverseCurrencies,
+                  onPressed: provider.reverseCurrencies,
                   isTablet: isTablet,
                 ),
                 const SizedBox(height: 16),
 
-                ConversionResultCard(result: vm.result),
+                ConversionResultCard(result: provider.result),
                 const SizedBox(height: 16),
 
                 ElevatedButton.icon(
-                  onPressed: vm.addToFavorites,
+                  onPressed: provider.addToFavorites,
                   icon: const Icon(Icons.star),
                   label: const Text('Add to Favorites'),
                   style: ElevatedButton.styleFrom(
@@ -160,33 +124,135 @@ class CurrencyConverterScreen extends StatelessWidget {
                 ),
                 const SizedBox(height: 16),
 
-                // Chart with loading indicator
-                vm.isChartLoading
-                    ? const LoadingIndicator(size: 60)
-                    : SizedBox(
-                      height: chartHeight,
-                      child: CurrencyChart(
-                        fromCurrency: vm.fromCurrency,
-                        toCurrency: vm.toCurrency,
-                        chartData: vm.chartData,
-                        isLoading: vm.isChartLoading,
-                        error: vm.chartError,
-                      ),
-                    ),
+                _buildChartSection(provider, chartHeight),
                 const SizedBox(height: 16),
 
                 FavoritesList(
-                  favorites: vm.favorites,
-                  onRemove: (index) => vm.removeFavoriteAt(index),
-                  onTap: (pair) => vm.loadFavoritePair(pair),
+                  favorites: provider.favorites,
+                  onRemove: (index) => provider.removeFavoriteAt(index),
+                  onTap: (pair) => provider.loadFavoritePair(pair),
                 ),
                 const SizedBox(height: 24),
 
-                HistoryList(history: vm.history, onClear: vm.clearHistory),
+                HistoryList(
+                  history: provider.getHistoryDisplayStrings(),
+                  onClear: provider.clearHistory,
+                ),
               ],
             ),
           ),
         ),
+      ),
+    );
+  }
+
+  // Currency dropdowns layout
+  Widget _buildCurrencyDropdowns(
+    CurrencyConverterProvider provider,
+    bool isTablet,
+  ) {
+    if (isTablet) {
+      return Row(
+        children: [
+          Expanded(
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                const Text('From:', style: TextStyle(fontSize: 16)),
+                const SizedBox(height: 4),
+                CurrencyDropdown(
+                  selectedCurrency: provider.fromCurrency,
+                  onChanged: provider.setFromCurrency,
+                  supportedCurrencies: provider.supportedCurrencies,
+                ),
+              ],
+            ),
+          ),
+          const SizedBox(width: 16),
+          Expanded(
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                const Text('To:', style: TextStyle(fontSize: 16)),
+                const SizedBox(height: 4),
+                CurrencyDropdown(
+                  selectedCurrency: provider.toCurrency,
+                  onChanged: provider.setToCurrency,
+                  supportedCurrencies: provider.supportedCurrencies,
+                ),
+              ],
+            ),
+          ),
+        ],
+      );
+    } else {
+      return Column(
+        children: [
+          Row(
+            mainAxisAlignment: MainAxisAlignment.spaceBetween,
+            children: [
+              const Text('From:', style: TextStyle(fontSize: 16)),
+              CurrencyDropdown(
+                selectedCurrency: provider.fromCurrency,
+                onChanged: provider.setFromCurrency,
+                supportedCurrencies: provider.supportedCurrencies,
+              ),
+            ],
+          ),
+          const SizedBox(height: 8),
+          Row(
+            mainAxisAlignment: MainAxisAlignment.spaceBetween,
+            children: [
+              const Text('To:', style: TextStyle(fontSize: 16)),
+              CurrencyDropdown(
+                selectedCurrency: provider.toCurrency,
+                onChanged: provider.setToCurrency,
+                supportedCurrencies: provider.supportedCurrencies,
+              ),
+            ],
+          ),
+        ],
+      );
+    }
+  }
+
+  // Chart section with all states
+  Widget _buildChartSection(
+    CurrencyConverterProvider provider,
+    double chartHeight,
+  ) {
+    if (provider.isChartLoading) {
+      return const LoadingIndicator(size: 60);
+    }
+
+    if (provider.chartError != null) {
+      return ErrorBanner(
+        message: provider.chartError!,
+        onDismiss: provider.clearChartError,
+        isWarning: true,
+      );
+    }
+
+    if (provider.chartData.isEmpty) {
+      return SizedBox(
+        height: chartHeight,
+        child: const Center(
+          child: Text(
+            'No chart data available',
+            style: TextStyle(color: Colors.grey),
+          ),
+        ),
+      );
+    }
+
+    return SizedBox(
+      height: chartHeight,
+      child: CurrencyChart(
+        fromCurrency: provider.fromCurrency,
+        toCurrency: provider.toCurrency,
+        chartData: provider.chartData,
+        isLoading: provider.isChartLoading,
+        error: provider.chartError,
       ),
     );
   }

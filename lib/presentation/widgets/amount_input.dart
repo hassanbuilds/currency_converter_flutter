@@ -1,4 +1,4 @@
-import 'package:courency_converter/presentation/viewmodels/currency_converter_viewmodels.dart';
+import 'package:courency_converter/presentation/viewmodels/currency_converter_provider.dart';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 
@@ -7,7 +7,8 @@ class AmountInput extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final vm = context.watch<CurrencyConverterViewModel>();
+    // ✅ FIXED: Use correct provider variable name
+    final provider = context.watch<CurrencyConverterProvider>();
     final width = MediaQuery.of(context).size.width;
 
     final bool isTablet = width > 600;
@@ -15,12 +16,13 @@ class AmountInput extends StatelessWidget {
     final double verticalPadding = isTablet ? 18 : 14;
 
     return TextField(
-      controller: vm.amountController,
+      controller: provider.amountController,
       keyboardType: TextInputType.number,
       textInputAction: TextInputAction.done,
       onSubmitted: (value) {
         FocusScope.of(context).unfocus();
-        if (value.isNotEmpty) vm.updateConversion();
+        if (value.isNotEmpty)
+          provider.convertCurrency(); // ✅ FIXED: Use new method name
       },
       decoration: InputDecoration(
         labelText: 'Enter Amount',

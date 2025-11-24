@@ -9,6 +9,7 @@ class CurrencyDropdown extends StatelessWidget {
     super.key,
     required this.selectedCurrency,
     required this.onChanged,
+    required List<String> supportedCurrencies,
   });
 
   @override

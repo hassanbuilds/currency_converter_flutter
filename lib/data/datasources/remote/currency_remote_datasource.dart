@@ -1,7 +1,8 @@
 import 'dart:convert';
+import 'package:courency_converter/core/errors/app_exception.dart';
 import 'package:http/http.dart' as http;
 
-class CurrencyApiService {
+class CurrencyRemoteDataSource {
   static const String _baseUrl =
       "https://api.currencyfreaks.com/v2.0/rates/latest";
   static const String _apiKey = "8e52bf806547426492687c4067a48cdb";
@@ -16,24 +17,28 @@ class CurrencyApiService {
         final jsonBody = jsonDecode(response.body);
 
         if (jsonBody['rates'] == null) {
-          throw Exception("Invalid API response: missing 'rates'");
+          throw NetworkException("Invalid API response: missing 'rates'");
         }
 
-        // Convert rates from String -> double
         final rates = Map<String, double>.from(
           (jsonBody['rates'] as Map<String, dynamic>).map(
             (k, v) => MapEntry(k, double.parse(v.toString())),
           ),
         );
 
+        // ✅ FIX: Ensure USD is always 1.0 (base currency)
+        rates['USD'] = 1.0;
+
         return rates;
       } else {
-        throw Exception(
+        throw NetworkException(
           "HTTP ${response.statusCode}: ${response.reasonPhrase}",
         );
       }
     } catch (e) {
-      throw Exception("Network/API error: $e");
+      throw NetworkException("Network/API error: $e");
     }
   }
+
+  fetchLatestRatesRaw() {}
 }

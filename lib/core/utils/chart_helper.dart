@@ -1,70 +1,114 @@
-import 'package:courency_converter/data/local/shared_prefs_service.dart';
+import 'dart:math';
+import 'package:courency_converter/core/errors/app_exception.dart';
+import 'package:courency_converter/data/models/conversion_history_model.dart';
 
 class ChartHelper {
-  final SharedPrefsService _prefsService = SharedPrefsService();
+  static const int _maxHistoryPoints = 30;
+  static const double _reasonableRateMin = 0.0001;
+  static const double _reasonableRateMax = 10000.0;
 
-  // Helper functions
-  List<double> _toDoubleList(List<dynamic> list) {
-    return list
-        .map((e) => e is double ? e : double.tryParse(e.toString()) ?? 0.0)
-        .toList();
+  double _roundToDecimals(double value, int decimals) {
+    final factor = pow(10, decimals);
+    return (value * factor).round() / factor;
   }
 
-  List<double> _invertRates(List<double> rates) {
-    return rates.map((rate) => rate == 0 ? 0.0 : 1.0 / rate).toList();
+  Random _seededRandom(double seed) {
+    return Random((seed * 1000000).toInt());
   }
 
-  // Public Methods
-  Future<List<double>> getChartData(
-    String from,
-    String to, {
-    required Map<String, double> rates,
-    bool reverse = false,
-  }) async {
-    final key = "${from}_$to";
+  List<double> extractRatesFromHistory(
+    List<ConversionHistoryModel> history,
+    String fromCurrency,
+    String toCurrency,
+  ) {
+    if (history.isEmpty) return [];
+    final relevantHistory =
+        history
+            .where(
+              (entry) =>
+                  entry.fromCurrency == fromCurrency &&
+                  entry.toCurrency == toCurrency,
+            )
+            .toList();
+    if (relevantHistory.isEmpty) return [];
 
-    List<double> history = _toDoubleList(
-      await _prefsService.getDoubleList(key),
-    );
+    relevantHistory.sort((a, b) => a.timestamp.compareTo(b.timestamp));
+    final rates =
+        relevantHistory
+            .map((entry) => entry.exchangeRate)
+            .where((rate) => rate > 0)
+            .toList();
 
-    if (history.isEmpty) {
-      final reverseKey = "${to}_$from";
-      List<double> reverseHistory = _toDoubleList(
-        await _prefsService.getDoubleList(reverseKey),
-      );
-
-      if (reverseHistory.isNotEmpty) {
-        history = _invertRates(reverseHistory);
-      } else {
-        final liveRate =
-            rates.containsKey(to) && rates.containsKey(from)
-                ? rates[to]! / rates[from]!
-                : 0.0;
-        history = [liveRate];
-        await _prefsService.saveDoubleList(key, history);
-      }
-    }
-
-    if (reverse) {
-      history = _invertRates(history);
-    }
-
-    return history;
+    if (rates.isNotEmpty) validateChartData(rates);
+    return rates;
   }
 
-  Future<void> saveRate(String from, String to, double rate) async {
-    final key = "${from}_$to";
-    List<double> history = _toDoubleList(
-      await _prefsService.getDoubleList(key),
-    );
-    history.add(rate);
-    if (history.length > 30) history.removeAt(0);
-    await _prefsService.saveDoubleList(key, history);
+  Map<String, double> getPriceRange(List<double> rates) {
+    if (rates.isEmpty) return {'min': 0.0, 'max': 0.0, 'current': 0.0};
+    final min = rates.reduce((a, b) => a < b ? a : b);
+    final max = rates.reduce((a, b) => a > b ? a : b);
+    final current = rates.last;
+    return {
+      'min': _roundToDecimals(min, 4),
+      'max': _roundToDecimals(max, 4),
+      'current': _roundToDecimals(current, 4),
+    };
   }
 
-  Future<void> saveRateBatch(List<Map<String, dynamic>> batch) async {
-    for (var item in batch) {
-      await saveRate(item['from'], item['to'], item['rate']);
+  void validateChartData(List<double> data) {
+    if (data.isEmpty) return;
+    if (data.any((rate) => rate.isNaN || rate.isInfinite || rate <= 0)) {
+      throw ChartException('Invalid chart data');
     }
   }
+
+  List<double> generateRealisticChartData(
+    double currentRate, {
+    int points = 30,
+  }) {
+    if (currentRate <= 0) return [currentRate];
+    if (points < 5 || points > 50) points = 30;
+
+    final data = <double>[currentRate];
+    final random = Random(DateTime.now().millisecondsSinceEpoch);
+
+    for (int i = 1; i < points; i++) {
+      final volatility = currentRate > 1.0 ? 0.015 : 0.025;
+      final changePercent = (random.nextDouble() - 0.48) * volatility;
+      final newRate = data.last * (1 + changePercent);
+      data.add(_roundToDecimals(newRate, 6));
+    }
+    return data;
+  }
+
+  String formatPriceDisplay(double price, String currencyCode) {
+    if (price == 0) return '0.00';
+
+    final symbols = {
+      'USD': '\$',
+      'PKR': 'Rs',
+      'EUR': '€',
+      'GBP': '£',
+      'JPY': '¥',
+      'AUD': 'A\$',
+      'CAD': 'C\$',
+      'CHF': 'CHF',
+      'CNY': '¥',
+      'INR': '₹',
+      'NZD': 'NZ\$',
+      'SGD': 'S\$',
+      'ZAR': 'R',
+    };
+
+    final symbol = symbols[currencyCode] ?? currencyCode;
+    return '$symbol${price.toStringAsFixed(2)}';
+  }
+
+  String formatPriceRange(double min, double max, String currencyCode) {
+    return '${formatPriceDisplay(min, currencyCode)} to ${formatPriceDisplay(max, currencyCode)}';
+  }
+}
+
+class ChartException extends AppException {
+  const ChartException(String message) : super(message);
 }
