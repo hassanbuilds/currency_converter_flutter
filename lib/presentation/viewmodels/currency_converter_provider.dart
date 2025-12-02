@@ -1,3 +1,4 @@
+import 'package:courency_converter/core/utils/chart_helper.dart';
 import 'package:courency_converter/domain/entities/conversion_result.dart';
 import 'package:flutter/material.dart';
 import '../../../core/constants/currency_data.dart';
@@ -163,27 +164,25 @@ class CurrencyConverterProvider extends ChangeNotifier {
   // ===== CHART =====
   Future<void> _loadChartData() async {
     try {
-      chartData = await _getRatesUseCase.getHistoricalRates(
+      // Always generate dummy chart data
+      final currentRate = await _getRatesUseCase.fetchPairRate(
         fromCurrency,
         toCurrency,
-        days: 7,
       );
 
-      if (chartData.isEmpty) {
-        final currentRate = await _getRatesUseCase.fetchPairRate(
-          fromCurrency,
-          toCurrency,
-        );
-        chartData = List.generate(7, (i) {
-          final variation = (i - 3) * 0.01;
-          return currentRate * (1 + variation);
-        });
-      }
-      chartError = null;
+      // Generate 7 points of realistic chart data
+      chartData = ChartHelper().generateRealisticChartData(
+        currentRate,
+        points: 7,
+      );
+
+      chartError = null; // No errors because it's always dummy data
     } catch (_) {
-      chartError = 'Failed to load chart data';
-      chartData = [];
+      // Fallback: if fetching currentRate fails, just use 1.0 as base
+      chartData = ChartHelper().generateRealisticChartData(1.0, points: 7);
+      chartError = null;
     }
+
     notifyListeners();
   }
 

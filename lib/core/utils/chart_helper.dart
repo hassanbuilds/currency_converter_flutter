@@ -72,12 +72,21 @@ class ChartHelper {
     final data = <double>[currentRate];
     final random = Random(DateTime.now().millisecondsSinceEpoch);
 
+    // Random trend: positive = upward, negative = downward
+    final trend = (random.nextDouble() - 0.5) * 0.005;
+
     for (int i = 1; i < points; i++) {
-      final volatility = currentRate > 1.0 ? 0.015 : 0.025;
-      final changePercent = (random.nextDouble() - 0.48) * volatility;
+      // Base volatility for sharper curves
+      final baseVolatility = currentRate > 1.0 ? 0.02 : 0.03;
+      // Smooth wave effect for natural ups and downs
+      final oscillation = sin(i / points * pi * 2) * 0.01;
+      // Combine random change, oscillation, and overall trend
+      final changePercent =
+          (random.nextDouble() - 0.5) * baseVolatility + oscillation + trend;
       final newRate = data.last * (1 + changePercent);
       data.add(_roundToDecimals(newRate, 6));
     }
+
     return data;
   }
 
