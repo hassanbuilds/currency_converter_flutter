@@ -35,7 +35,7 @@ class PreferencesRepositoryImpl implements PreferencesRepository {
     }
   }
 
-  // ✅ ADDED: Missing methods from interface
+  //  Missing methods from interface
   @override
   Future<List<ConversionHistoryModel>> searchHistory(String query) async {
     try {

@@ -18,7 +18,7 @@ class CurrencyRepositoryImpl implements CurrencyRepository {
 
   Map<String, double>? _cachedRates;
 
-  // ✅ RATE CALCULATION
+  //  RATE CALCULATION
   double _getPairRate(String from, String to, Map<String, double> rates) {
     if (!rates.containsKey(from) || !rates.containsKey(to)) {
       throw ConversionException('Invalid currency pair: $from → $to');
@@ -34,7 +34,7 @@ class CurrencyRepositoryImpl implements CurrencyRepository {
     return toRate / fromRate;
   }
 
-  // ✅ HISTORICAL RATES FOR CHARTS
+  // HISTORICAL RATES FOR CHARTS
   @override
   Future<List<double>> getHistoricalRates(
     String from,
@@ -86,7 +86,7 @@ class CurrencyRepositoryImpl implements CurrencyRepository {
     }
   }
 
-  // ✅ FIXED: Always use live rates for conversion
+  //  Always use live rates for conversion
   @override
   Future<double> fetchPairRate(String from, String to) async {
     try {
