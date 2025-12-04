@@ -26,7 +26,7 @@ class CurrencyRemoteDataSource {
           ),
         );
 
-        // ✅ FIX: Ensure USD is always 1.0 (base currency)
+        //  Ensure USD is always 1.0 (base currency)
         rates['USD'] = 1.0;
 
         return rates;

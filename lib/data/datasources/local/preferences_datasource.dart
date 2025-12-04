@@ -11,7 +11,7 @@ class PreferencesDataSource {
   Future<SharedPreferences> get _prefs async =>
       await SharedPreferences.getInstance();
 
-  // ✅ FIXED: History Methods with proper JSON serialization
+  //  History Methods with proper JSON serialization
   Future<List<ConversionHistoryModel>> getConversionHistory() async {
     try {
       final prefs = await _prefs;
@@ -33,7 +33,7 @@ class PreferencesDataSource {
     }
   }
 
-  // ✅ FIXED: Save with proper validation
+  // Save with proper validation
   Future<void> saveToHistory(ConversionHistoryModel entry) async {
     try {
       // Validate entry before saving
@@ -59,7 +59,7 @@ class PreferencesDataSource {
     }
   }
 
-  // ✅ VALIDATION: Ensure data integrity
+  //  Ensure data integrity
   void _validateHistoryEntry(ConversionHistoryModel entry) {
     if (entry.id.isEmpty) {
       throw ArgumentError('History entry must have a valid ID');
