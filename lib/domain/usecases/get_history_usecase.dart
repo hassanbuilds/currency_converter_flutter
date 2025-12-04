@@ -12,10 +12,7 @@ class GetHistoryUseCase {
       final history = await _repository.getConversionHistory();
 
       if (history.length > maxEntries * 2) {
-        await _cleanupOldEntries(
-          history,
-          maxEntries,
-        ); // ✅ FIXED: Remove .cast()
+        await _cleanupOldEntries(history, maxEntries); //  Remove .cast()
         return await _repository.getConversionHistory();
       }
 
@@ -25,7 +22,7 @@ class GetHistoryUseCase {
     }
   }
 
-  // ✅ FIXED: Remove wrong type casting
+  //  Remove wrong type casting
   Future<void> addToHistory(ConversionHistoryModel conversionEntry) async {
     if (!_isValidHistoryEntry(conversionEntry)) {
       throw ArgumentError('Invalid history entry format');
@@ -46,9 +43,7 @@ class GetHistoryUseCase {
     }
 
     try {
-      await _repository.saveToHistory(
-        conversionEntry,
-      ); // ✅ FIXED: Remove 'as String'
+      await _repository.saveToHistory(conversionEntry); // Remove 'as String'
     } catch (e) {
       throw CacheException('Failed to save history: $e');
     }
@@ -94,7 +89,7 @@ class GetHistoryUseCase {
     };
   }
 
-  // ✅ FIXED: Remove wrong type casting
+  //  Remove wrong type casting
   Future<void> _cleanupOldEntries(
     List<ConversionHistoryModel> history,
     int maxEntries,
@@ -103,7 +98,7 @@ class GetHistoryUseCase {
     await _repository.clearHistory();
 
     for (final entry in recentHistory.reversed) {
-      await _repository.saveToHistory(entry); // ✅ FIXED: Remove 'as String'
+      await _repository.saveToHistory(entry); // Remove 'as String'
     }
   }
 
