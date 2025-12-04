@@ -10,13 +10,13 @@ import '../../../domain/repositories/preferences_repository.dart';
 import '../../../data/models/conversion_history_model.dart';
 
 class CurrencyConverterProvider extends ChangeNotifier {
-  // ===== DEPENDENCIES =====
+  // DEPENDENCIES
   final ConvertCurrencyUseCase _convertUseCase;
   final GetExchangeRatesUseCase _getRatesUseCase;
   final GetHistoryUseCase _getHistoryUseCase;
   final PreferencesRepository _preferencesRepository;
 
-  // ===== CONTROLLERS & STATE =====
+  //  CONTROLLERS & STATE
   final TextEditingController amountController = TextEditingController();
   String fromCurrency = 'USD';
   String toCurrency = 'PKR';
@@ -36,7 +36,7 @@ class CurrencyConverterProvider extends ChangeNotifier {
   bool isOnline = true;
   bool isCheckingConnection = false;
 
-  // ===== CONSTRUCTOR =====
+  // CONSTRUCTOR
   CurrencyConverterProvider({
     required ConvertCurrencyUseCase convertUseCase,
     required GetExchangeRatesUseCase getRatesUseCase,
@@ -51,7 +51,7 @@ class CurrencyConverterProvider extends ChangeNotifier {
 
   get retryConnection => null;
 
-  // ===== INITIALIZATION =====
+  //  INITIALIZATION
   Future<void> _initialize() async {
     amountController.text = '1';
     await Future.wait([_loadPreferences(), _loadSupportedCurrencies()]);
@@ -93,7 +93,7 @@ class CurrencyConverterProvider extends ChangeNotifier {
     }
   }
 
-  // ===== CONVERSION =====
+  //  CONVERSION
   Future<void> convertCurrency({bool loadChart = true}) async {
     final amount = double.tryParse(amountController.text);
     if (amount == null || amount <= 0) {
@@ -161,7 +161,7 @@ class CurrencyConverterProvider extends ChangeNotifier {
     notifyListeners();
   }
 
-  // ===== CHART =====
+  //  CHART
   Future<void> _loadChartData() async {
     try {
       // Always generate dummy chart data
@@ -186,7 +186,7 @@ class CurrencyConverterProvider extends ChangeNotifier {
     notifyListeners();
   }
 
-  // ===== HISTORY =====
+  // HISTORY
   Future<void> _saveToHistory(ConversionResult conversion) async {
     try {
       final entry = ConversionHistoryModel.fromConversion(
@@ -214,7 +214,7 @@ class CurrencyConverterProvider extends ChangeNotifier {
     notifyListeners();
   }
 
-  // ===== FAVORITES =====
+  //  FAVORITES
   Future<void> addToFavorites() async {
     final pair = '$fromCurrency → $toCurrency';
     if (!favorites.contains(pair)) {
@@ -261,7 +261,7 @@ class CurrencyConverterProvider extends ChangeNotifier {
     }
   }
 
-  // ===== THEME =====
+  //  THEME
   Future<void> toggleTheme() async {
     isDarkMode = !isDarkMode;
     try {
@@ -273,7 +273,7 @@ class CurrencyConverterProvider extends ChangeNotifier {
     notifyListeners();
   }
 
-  // ===== CURRENCY SELECTION =====
+  // CURRENCY SELECTION
   void setFromCurrency(String? value) {
     if (value == null || !supportedCurrencies.contains(value)) return;
     fromCurrency = value;
@@ -293,7 +293,7 @@ class CurrencyConverterProvider extends ChangeNotifier {
     convertCurrency();
   }
 
-  // ===== ERROR HANDLING =====
+  //  ERROR HANDLING
   void clearError() {
     error = null;
     notifyListeners();
@@ -304,7 +304,7 @@ class CurrencyConverterProvider extends ChangeNotifier {
     notifyListeners();
   }
 
-  // ===== UTILITY =====
+  //  UTILITY
   Map<String, double> getCurrentPriceRange() {
     if (chartData.isEmpty) return {'min': 0.0, 'max': 0.0, 'current': 0.0};
     final min = chartData.reduce((a, b) => a < b ? a : b);
