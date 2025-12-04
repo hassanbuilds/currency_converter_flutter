@@ -7,7 +7,6 @@ class AmountInput extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    // ✅ FIXED: Use correct provider variable name
     final provider = context.watch<CurrencyConverterProvider>();
     final width = MediaQuery.of(context).size.width;
 
@@ -21,8 +20,9 @@ class AmountInput extends StatelessWidget {
       textInputAction: TextInputAction.done,
       onSubmitted: (value) {
         FocusScope.of(context).unfocus();
-        if (value.isNotEmpty)
-          provider.convertCurrency(); // ✅ FIXED: Use new method name
+        if (value.isNotEmpty) {
+          provider.convertCurrency();
+        }
       },
       decoration: InputDecoration(
         labelText: 'Enter Amount',
