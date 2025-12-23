@@ -1,4 +1,5 @@
 import 'dart:math';
+import 'package:courency_converter/domain/services/currency_calculator.dart';
 import 'package:courency_converter/core/errors/app_exception.dart';
 import 'package:courency_converter/domain/repositories/currency_repository.dart';
 import '../datasources/remote/currency_remote_datasource.dart';
@@ -227,16 +228,4 @@ class CurrencyRepositoryImpl implements CurrencyRepository {
       // silent fail
     }
   }
-}
-
-class ConversionException extends AppException {
-  const ConversionException(String message) : super(message);
-}
-
-class NetworkException extends AppException {
-  const NetworkException(String message) : super(message);
-}
-
-class CacheException extends AppException {
-  const CacheException(String message) : super(message);
 }

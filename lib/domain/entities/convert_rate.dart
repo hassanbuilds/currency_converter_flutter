@@ -10,9 +10,6 @@ class CurrencyRate {
     required this.toCurrency,
     required this.rate,
     required this.timestamp,
-    required String baseCurrency,
-    required String targetCurrency,
-    required DateTime lastUpdated,
   });
 
   @override

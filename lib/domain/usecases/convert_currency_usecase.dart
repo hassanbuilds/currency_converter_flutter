@@ -107,7 +107,3 @@ class ConvertCurrencyUseCase {
     );
   }
 }
-
-class ConversionException extends AppException {
-  const ConversionException(String message) : super(message);
-}
