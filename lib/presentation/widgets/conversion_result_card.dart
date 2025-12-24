@@ -24,7 +24,7 @@ class _ConversionResultCardState extends State<ConversionResultCard> {
 
     return Card(
       elevation: isTablet ? 6 : 4,
-      color: Theme.of(context).colorScheme.primary, // ✅ Purple in dark mode
+      color: Theme.of(context).colorScheme.primary,
       shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
       margin: EdgeInsets.symmetric(
         horizontal: isTablet ? size.width * 0.02 : 0,
