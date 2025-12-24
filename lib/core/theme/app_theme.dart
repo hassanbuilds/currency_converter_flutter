@@ -18,11 +18,9 @@ class AppTheme {
     colorScheme: const ColorScheme.light(
       primary: Color(0xFF8B4513), // Rich Brown
       secondary: Color(0xFFA0522D), // Sienna (lighter brown)
-      surface: Color(0xFFFFF8E1), // Warm Cream
-      background: Color(0xFFF5F5DC), // Beige Background
+      surface: Color(0xFFFFF8E1), // Beige Background
       onPrimary: Colors.white,
-      onSecondary: Colors.white,
-      onBackground: Color(0xFF5D4037), // Dark Brown text
+      onSecondary: Colors.white, // Dark Brown text
       onSurface: Color(0xFF5D4037), // Dark Brown text on surfaces
     ),
 
@@ -137,8 +135,7 @@ class AppTheme {
       primary: Color(0xFF64B5F6), // Light Blue accent
       secondary: Color(0xFF90CAF9), // Lighter Blue
       tertiary: Color(0xFF42A5F5), // Blue
-      surface: Color(0xFF2D2D2D), // Dark Gray surface
-      background: Color(0xFF1E1E1E), // Dark Gray background
+      surface: Color(0xFF2D2D2D), // Dark Gray background
       onPrimary: Color(0xFF1E1E1E), // Dark text on light blue
       onSecondary: Color(0xFF1E1E1E), // Dark text on lighter blue
     ),
