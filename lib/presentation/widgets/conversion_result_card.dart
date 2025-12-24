@@ -49,7 +49,7 @@ class _ConversionResultCardState extends State<ConversionResultCard> {
             style: TextStyle(
               fontSize: isTablet ? 22 : 16,
               fontWeight: FontWeight.w500,
-              color: Colors.white, // ✅ White for contrast
+              color: Colors.white,
             ),
             textAlign: TextAlign.center,
           ),
