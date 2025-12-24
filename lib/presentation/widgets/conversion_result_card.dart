@@ -22,23 +22,9 @@ class _ConversionResultCardState extends State<ConversionResultCard> {
     final size = MediaQuery.of(context).size;
     final isTablet = size.width > 600;
 
-    // Local helper function to extract numeric value from result string
-    double? extractResultValue(String result) {
-      final match = RegExp(r'=\s*([\d.]+)').firstMatch(result);
-      if (match != null) return double.tryParse(match.group(1)!);
-      return null;
-    }
-
-    // Determine dynamic color based on previous value
-    Color getResultColor() {
-      if (widget.previousValue == null) return Colors.black;
-      final currentValue = extractResultValue(widget.result);
-      if (currentValue == null) return Colors.black;
-      return currentValue >= widget.previousValue! ? Colors.green : Colors.red;
-    }
-
     return Card(
       elevation: isTablet ? 6 : 4,
+      color: Theme.of(context).colorScheme.primary, // ✅ Purple in dark mode
       shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
       margin: EdgeInsets.symmetric(
         horizontal: isTablet ? size.width * 0.02 : 0,
@@ -63,7 +49,7 @@ class _ConversionResultCardState extends State<ConversionResultCard> {
             style: TextStyle(
               fontSize: isTablet ? 22 : 16,
               fontWeight: FontWeight.w500,
-              color: getResultColor(),
+              color: Colors.white, // ✅ White for contrast
             ),
             textAlign: TextAlign.center,
           ),
