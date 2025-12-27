@@ -4,15 +4,15 @@ class ConvertButton extends StatelessWidget {
   const ConvertButton({
     super.key,
     required this.isTablet,
-    required this.onPressed, //  ADDED
-    required this.isLoading, //  ADDED
-    required this.isOffline, //  ADDED
+    required this.onPressed,
+    required this.isLoading,
+    required this.isOffline,
   });
 
   final bool isTablet;
-  final VoidCallback onPressed; //  ADDED
-  final bool isLoading; //  ADDED
-  final bool isOffline; //  ADDED
+  final VoidCallback onPressed;
+  final bool isLoading;
+  final bool isOffline;
 
   @override
   Widget build(BuildContext context) {
@@ -26,7 +26,7 @@ class ConvertButton extends StatelessWidget {
         SizedBox(
           width: double.infinity,
           child: ElevatedButton.icon(
-            onPressed: isLoading ? null : onPressed, //  ADDED loading state
+            onPressed: isLoading ? null : onPressed,
             icon:
                 isLoading
                     ? SizedBox(
@@ -38,31 +38,23 @@ class ConvertButton extends StatelessWidget {
                       ),
                     )
                     : Icon(
-                      isOffline
-                          ? Icons.wifi_off
-                          : Icons.currency_exchange, //DIFFERENT ICON
+                      isOffline ? Icons.wifi_off : Icons.currency_exchange,
                       size: 22,
                     ),
             label:
                 isLoading
                     ? const Text('Converting...')
-                    : Text(
-                      isOffline ? 'Convert (Offline)' : 'Convert',
-                    ), // DIFFERENT TEXT
+                    : Text(isOffline ? 'Convert (Offline)' : 'Convert'),
             style: ElevatedButton.styleFrom(
               padding: EdgeInsets.symmetric(vertical: paddingY),
               textStyle: TextStyle(fontSize: fontSize),
               minimumSize: Size(double.infinity, isTablet ? 60 : 48),
-              backgroundColor:
-                  isOffline
-                      ? Colors.grey
-                      : null, //  DIFFERENT COLOR WHEN OFFLINE
-              foregroundColor:
-                  isOffline ? Colors.white : null, //  TEXT COLOR WHEN OFFLINE
+              backgroundColor: isOffline ? Colors.grey : null,
+              foregroundColor: isOffline ? Colors.white : null,
             ),
           ),
         ),
-        // OFFLINE INFO TEXT
+
         if (isOffline)
           Padding(
             padding: const EdgeInsets.only(top: 8.0),
