@@ -29,13 +29,11 @@ class CurrencyConverterApp extends StatelessWidget {
   }
 
   CurrencyConverterProvider _createProvider() {
-    // CREATE DEPENDENCIES
     final remoteDataSource = CurrencyRemoteDataSource();
     final localDataSource = CurrencyLocalDataSource();
     final preferencesDataSource = PreferencesDataSource();
     final chartHelper = ChartHelper();
 
-    // CREATE REPOSITORIES
     final currencyRepository = CurrencyRepositoryImpl(
       remoteDataSource: remoteDataSource,
       localDataSource: localDataSource,
@@ -46,7 +44,6 @@ class CurrencyConverterApp extends StatelessWidget {
       preferencesDataSource,
     );
 
-    // CREATE USECASES
     final convertUseCase = ConvertCurrencyUseCase(currencyRepository);
     final getRatesUseCase = GetExchangeRatesUseCase(currencyRepository);
     final getHistoryUseCase = GetHistoryUseCase(preferencesRepository);
