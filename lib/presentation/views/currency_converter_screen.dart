@@ -146,7 +146,6 @@ class CurrencyConverterScreen extends StatelessWidget {
     );
   }
 
-  // Currency dropdowns layout
   Widget _buildCurrencyDropdowns(
     CurrencyConverterProvider provider,
     bool isTablet,
@@ -216,7 +215,6 @@ class CurrencyConverterScreen extends StatelessWidget {
     }
   }
 
-  // Chart section with all states
   Widget _buildChartSection(
     CurrencyConverterProvider provider,
     double chartHeight,
