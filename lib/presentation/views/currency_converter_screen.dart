@@ -13,8 +13,40 @@ import '../widgets/loading_indicator.dart';
 import '../widgets/error_banner.dart';
 import '../widgets/offline_banner.dart';
 
-class CurrencyConverterScreen extends StatelessWidget {
+class CurrencyConverterScreen extends StatefulWidget {
   const CurrencyConverterScreen({super.key});
+
+  @override
+  State<CurrencyConverterScreen> createState() =>
+      _CurrencyConverterScreenState();
+}
+
+class _CurrencyConverterScreenState extends State<CurrencyConverterScreen> {
+  DateTime? _lastBackPressTime;
+
+  Future<bool> _onWillPop() async {
+    final now = DateTime.now();
+
+    // First time or more than 2 seconds since last press
+    if (_lastBackPressTime == null ||
+        now.difference(_lastBackPressTime!) > const Duration(seconds: 2)) {
+      _lastBackPressTime = now;
+
+      // Show the message
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content: const Text('Press back again to exit'),
+          duration: const Duration(seconds: 2),
+          behavior: SnackBarBehavior.floating,
+          margin: const EdgeInsets.all(20),
+        ),
+      );
+
+      return false; // Don't exit
+    }
+
+    return true; // Exit the app
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -49,96 +81,99 @@ class CurrencyConverterScreen extends StatelessWidget {
             ? 250.0
             : 200.0;
 
-    return Scaffold(
-      appBar: AppBar(
-        title: const Text('Currency Converter'),
-        centerTitle: true,
-        actions: [
-          IconButton(
-            icon: Icon(
-              provider.isDarkMode ? Icons.light_mode : Icons.dark_mode,
+    return WillPopScope(
+      onWillPop: _onWillPop,
+      child: Scaffold(
+        appBar: AppBar(
+          title: const Text('Currency Converter'),
+          centerTitle: true,
+          actions: [
+            IconButton(
+              icon: Icon(
+                provider.isDarkMode ? Icons.light_mode : Icons.dark_mode,
+              ),
+              onPressed: provider.toggleTheme,
             ),
-            onPressed: provider.toggleTheme,
-          ),
-        ],
-      ),
-      body: SingleChildScrollView(
-        padding: EdgeInsets.symmetric(
-          horizontal: horizontalPadding,
-          vertical: 16.0,
+          ],
         ),
-        child: Center(
-          child: ConstrainedBox(
-            constraints: const BoxConstraints(maxWidth: 600),
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.stretch,
-              children: [
-                // Offline banner
-                if (!provider.isOnline)
-                  OfflineBanner(
-                    onRetry: provider.retryConnection,
-                    isRetrying: provider.isCheckingConnection,
+        body: SingleChildScrollView(
+          padding: EdgeInsets.symmetric(
+            horizontal: horizontalPadding,
+            vertical: 16.0,
+          ),
+          child: Center(
+            child: ConstrainedBox(
+              constraints: const BoxConstraints(maxWidth: 600),
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.stretch,
+                children: [
+                  // Offline banner
+                  if (!provider.isOnline)
+                    OfflineBanner(
+                      onRetry: provider.retryConnection,
+                      isRetrying: provider.isCheckingConnection,
+                    ),
+
+                  // Error banner
+                  if (provider.error != null)
+                    ErrorBanner(
+                      message: provider.error!,
+                      onDismiss: provider.clearError,
+                    ),
+
+                  const AmountInput(),
+                  const SizedBox(height: 16),
+
+                  ConvertButton(
+                    isTablet: isTablet,
+                    onPressed: () {
+                      FocusScope.of(context).unfocus();
+                      provider.convertCurrency();
+                    },
+                    isLoading: provider.isLoading,
+                    isOffline: !provider.isOnline,
                   ),
+                  const SizedBox(height: 16),
 
-                // Error banner
-                if (provider.error != null)
-                  ErrorBanner(
-                    message: provider.error!,
-                    onDismiss: provider.clearError,
+                  _buildCurrencyDropdowns(provider, isTablet),
+                  const SizedBox(height: 16),
+
+                  ReverseSwitch(
+                    onPressed: provider.reverseCurrencies,
+                    isTablet: isTablet,
                   ),
+                  const SizedBox(height: 16),
 
-                const AmountInput(),
-                const SizedBox(height: 16),
+                  ConversionResultCard(result: provider.result),
+                  const SizedBox(height: 16),
 
-                ConvertButton(
-                  isTablet: isTablet,
-                  onPressed: () {
-                    FocusScope.of(context).unfocus();
-                    provider.convertCurrency();
-                  },
-                  isLoading: provider.isLoading,
-                  isOffline: !provider.isOnline,
-                ),
-                const SizedBox(height: 16),
-
-                _buildCurrencyDropdowns(provider, isTablet),
-                const SizedBox(height: 16),
-
-                ReverseSwitch(
-                  onPressed: provider.reverseCurrencies,
-                  isTablet: isTablet,
-                ),
-                const SizedBox(height: 16),
-
-                ConversionResultCard(result: provider.result),
-                const SizedBox(height: 16),
-
-                ElevatedButton.icon(
-                  onPressed: provider.addToFavorites,
-                  icon: const Icon(Icons.star),
-                  label: const Text('Add to Favorites'),
-                  style: ElevatedButton.styleFrom(
-                    padding: EdgeInsets.symmetric(vertical: buttonPadding),
-                    textStyle: TextStyle(fontSize: buttonFontSize),
+                  ElevatedButton.icon(
+                    onPressed: provider.addToFavorites,
+                    icon: const Icon(Icons.star),
+                    label: const Text('Add to Favorites'),
+                    style: ElevatedButton.styleFrom(
+                      padding: EdgeInsets.symmetric(vertical: buttonPadding),
+                      textStyle: TextStyle(fontSize: buttonFontSize),
+                    ),
                   ),
-                ),
-                const SizedBox(height: 16),
+                  const SizedBox(height: 16),
 
-                _buildChartSection(provider, chartHeight),
-                const SizedBox(height: 16),
+                  _buildChartSection(provider, chartHeight),
+                  const SizedBox(height: 16),
 
-                FavoritesList(
-                  favorites: provider.favorites,
-                  onRemove: (index) => provider.removeFavoriteAt(index),
-                  onTap: (pair) => provider.loadFavoritePair(pair),
-                ),
-                const SizedBox(height: 24),
+                  FavoritesList(
+                    favorites: provider.favorites,
+                    onRemove: (index) => provider.removeFavoriteAt(index),
+                    onTap: (pair) => provider.loadFavoritePair(pair),
+                  ),
+                  const SizedBox(height: 24),
 
-                HistoryList(
-                  history: provider.getHistoryDisplayStrings(),
-                  onClear: provider.clearHistory,
-                ),
-              ],
+                  HistoryList(
+                    history: provider.getHistoryDisplayStrings(),
+                    onClear: provider.clearHistory,
+                  ),
+                ],
+              ),
             ),
           ),
         ),
