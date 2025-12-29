@@ -16,13 +16,13 @@ class CurrencyConverterProvider extends ChangeNotifier {
   final GetHistoryUseCase _getHistoryUseCase;
   final PreferencesRepository _preferencesRepository;
 
-  //  CONTROLLERS & STATE
+  // CONTROLLERS & STATE
   final TextEditingController amountController = TextEditingController();
   String fromCurrency = 'USD';
   String toCurrency = 'PKR';
   bool isDarkMode = false;
 
-  List<ConversionHistoryModel> history = [];
+  List<ConversionHistoryModel> history = []; // in-memory only
   List<String> favorites = [];
   List<String> supportedCurrencies = [];
   List<double> chartData = [];
@@ -51,24 +51,23 @@ class CurrencyConverterProvider extends ChangeNotifier {
 
   get retryConnection => null;
 
-  //  INITIALIZATION
+  // INITIALIZATION
   Future<void> _initialize() async {
     amountController.text = '1';
-    await Future.wait([_loadPreferences(), _loadSupportedCurrencies()]);
-    if (supportedCurrencies.isNotEmpty) {
-      await convertCurrency(loadChart: true);
-    }
+    await _loadPreferences();
+    await _loadSupportedCurrencies(); // Only local fallback currencies
+    // Do NOT call convertCurrency here; chart loads only after conversion
   }
 
   Future<void> _loadPreferences() async {
     try {
       final results = await Future.wait([
-        _getHistoryUseCase.execute(),
+        _getHistoryUseCase.execute(), // optional, can remove if only in-memory
         _preferencesRepository.getFavorites(),
         _preferencesRepository.isDarkTheme(),
       ]);
 
-      history = results[0] as List<ConversionHistoryModel>;
+      history = []; // always start with empty history
       favorites = results[1] as List<String>;
       isDarkMode = results[2] as bool;
     } catch (e) {
@@ -78,8 +77,7 @@ class CurrencyConverterProvider extends ChangeNotifier {
 
   Future<void> _loadSupportedCurrencies() async {
     try {
-      final rates = await _getRatesUseCase.execute();
-      supportedCurrencies = rates.keys.toList()..sort();
+      supportedCurrencies = currencySymbols.keys.toList()..sort();
 
       if (!supportedCurrencies.contains(fromCurrency)) {
         fromCurrency = supportedCurrencies.first;
@@ -93,7 +91,7 @@ class CurrencyConverterProvider extends ChangeNotifier {
     }
   }
 
-  //  CONVERSION
+  // CONVERSION
   Future<void> convertCurrency({bool loadChart = true}) async {
     final amount = double.tryParse(amountController.text);
     if (amount == null || amount <= 0) {
@@ -104,6 +102,7 @@ class CurrencyConverterProvider extends ChangeNotifier {
     _setLoading(true, loadChart: loadChart);
 
     try {
+      // API fetch happens ONLY when user taps Convert
       final conversionResult = await _convertUseCase.execute(
         fromCurrency: fromCurrency,
         toCurrency: toCurrency,
@@ -114,7 +113,7 @@ class CurrencyConverterProvider extends ChangeNotifier {
       await _saveToHistory(conversionResult);
 
       if (loadChart) {
-        await _loadChartData();
+        await _loadChartData(); // always dummy chart after conversion
       }
     } on AppException catch (e) {
       _handleConversionError(loadChart, e.message);
@@ -161,60 +160,41 @@ class CurrencyConverterProvider extends ChangeNotifier {
     notifyListeners();
   }
 
-  //  CHART
+  // CHART
   Future<void> _loadChartData() async {
-    try {
-      // Always generate dummy chart data
-      final currentRate = await _getRatesUseCase.fetchPairRate(
-        fromCurrency,
-        toCurrency,
-      );
+    isChartLoading = true;
+    notifyListeners(); // show chart loading spinner
 
-      // Generate 7 points of realistic chart data
-      chartData = ChartHelper().generateRealisticChartData(
-        currentRate,
-        points: 7,
-      );
+    await Future.delayed(const Duration(milliseconds: 500)); // simulate loading
 
-      chartError = null; // No errors because it's always dummy data
-    } catch (_) {
-      // Fallback: if fetching currentRate fails, just use 1.0 as base
-      chartData = ChartHelper().generateRealisticChartData(1.0, points: 7);
-      chartError = null;
-    }
+    // Generate dummy chart data (always 7 points)
+    chartData = ChartHelper().generateRealisticChartData(1.0, points: 7);
 
+    chartError = null;
+    isChartLoading = false;
     notifyListeners();
   }
 
-  // HISTORY
+  // HISTORY (in-memory only)
   Future<void> _saveToHistory(ConversionResult conversion) async {
-    try {
-      final entry = ConversionHistoryModel.fromConversion(
-        fromCurrency: fromCurrency,
-        toCurrency: toCurrency,
-        originalAmount: conversion.originalAmount,
-        convertedAmount: conversion.convertedAmount,
-        exchangeRate: conversion.exchangeRate,
-      );
-      await _getHistoryUseCase.addToHistory(entry);
-      history = await _getHistoryUseCase.execute();
-    } catch (e) {
-      error = 'Failed to save history: $e';
-    }
+    final entry = ConversionHistoryModel.fromConversion(
+      fromCurrency: fromCurrency,
+      toCurrency: toCurrency,
+      originalAmount: conversion.originalAmount,
+      convertedAmount: conversion.convertedAmount,
+      exchangeRate: conversion.exchangeRate,
+    );
+
+    history.add(entry); // save in memory only
     notifyListeners();
   }
 
   Future<void> clearHistory() async {
-    try {
-      await _getHistoryUseCase.clearHistory();
-      history = await _getHistoryUseCase.execute();
-    } catch (e) {
-      error = 'Failed to clear history: $e';
-    }
+    history.clear();
     notifyListeners();
   }
 
-  //  FAVORITES
+  // FAVORITES
   Future<void> addToFavorites() async {
     final pair = '$fromCurrency → $toCurrency';
     if (!favorites.contains(pair)) {
@@ -261,7 +241,7 @@ class CurrencyConverterProvider extends ChangeNotifier {
     }
   }
 
-  //  THEME
+  // THEME
   Future<void> toggleTheme() async {
     isDarkMode = !isDarkMode;
     try {
@@ -293,7 +273,7 @@ class CurrencyConverterProvider extends ChangeNotifier {
     convertCurrency();
   }
 
-  //  ERROR HANDLING
+  // ERROR HANDLING
   void clearError() {
     error = null;
     notifyListeners();
@@ -304,7 +284,7 @@ class CurrencyConverterProvider extends ChangeNotifier {
     notifyListeners();
   }
 
-  //  UTILITY
+  // UTILITY
   Map<String, double> getCurrentPriceRange() {
     if (chartData.isEmpty) return {'min': 0.0, 'max': 0.0, 'current': 0.0};
     final min = chartData.reduce((a, b) => a < b ? a : b);
