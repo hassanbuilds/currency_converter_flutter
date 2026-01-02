@@ -92,14 +92,18 @@ This app allows users to convert currencies using **live exchange rates** fetche
 
 ## 📂 Project Structure
 
+The project follows a **clean architecture–inspired structure** for better scalability and maintainability:
+
 ```
 lib/
- ├── models/
- ├── services/
- ├── screens/
- ├── widgets/
- └── main.dart
+ ├── core/            # Common utilities, constants, themes, helpers
+ ├── data/            # Data sources, API services, models, repositories
+ ├── domain/          # Business logic, entities, use cases
+ ├── presentation/    # UI layer (screens, widgets, state management)
+ └── main.dart        # App entry point
 ```
+
+> Each layer may contain multiple subfolders and files based on features and responsibilities.
 
 ---
 
