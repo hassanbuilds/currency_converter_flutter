@@ -1,36 +1,123 @@
 # 💱 Currency Converter App
-A simple and beginner-friendly Currency Converter built with Flutter.
-This app allows users to convert between multiple currencies, save their favorite conversions, toggle light/dark themes, and track their conversion history. 
+
+A **feature-rich Flutter currency converter** that delivers **real-time exchange rates** via an external API. The app focuses on a clean, modern user experience with an updated UI, light & dark themes, favorites, charts, and a detailed conversion history.
 
 ---
 
-## 🚀 Features Implemented
-- Convert between multiple currencies (not limited to USD ↔ PKR).
-- Reverse conversion toggle for quick swapping.
-- Light/Dark theme switch with persistent preference.
-- Conversion history stored locally using SharedPreferences.
-- Favorites: manually save specific conversions for quick access.
-- Cart: add conversions to a local cart (not API-connected yet).
-- Scrollable layout to handle keyboard without overflow issues.
-- Clean and modern beginner-friendly UI.
+## 🚀 Overview
+
+This app allows users to convert currencies using **live exchange rates** fetched from an API. It also helps users track their activity and preferences through favorites and conversion history, making it more than just a basic converter.
 
 ---
 
-## 📸 Screenshots  
+## ✨ Features
 
-
-</p>
-
-
-
-</p>
+* 🔄 **Real-time currency conversion** using live exchange rate API
+* ⭐ **Favorite currencies** for faster access
+* 📈 **Exchange rate chart** (currently using dummy data)
+* 🕘 **Conversion history** to track previous conversions
+* 🌗 **Light & Dark mode** support
+* 🎨 **Updated clean and modern UI**
+* ⚡ Smooth performance with simple state management
 
 ---
 
 ## 🛠️ Tech Stack
-- **Flutter** (Dart)
-- **SharedPreferences** for local storage
-- **Material Design** for UI
-- Provider (Statemangment) is used in this app
+
+* **Flutter (Dart)**
+* **REST API** for real-time exchange rates
+* Material Design
+* Basic state management
 
 ---
+
+## 📸 Screenshots
+
+> Replace the image paths below with your actual screenshots
+
+| Light Mode                                | Dark Mode                               |
+| ----------------------------------------- | --------------------------------------- |
+| ![Light Mode](screenshots/light_mode.png) | ![Dark Mode](screenshots/dark_mode.png) |
+
+| Favorites                               | Conversion History                  |
+| --------------------------------------- | ----------------------------------- |
+| ![Favorites](screenshots/favorites.png) | ![History](screenshots/history.png) |
+
+| Chart View                      |
+| ------------------------------- |
+| ![Chart](screenshots/chart.png) |
+
+---
+
+## 🚀 Getting Started
+
+### Prerequisites
+
+* Flutter SDK
+* Dart
+* Android Emulator / iOS Simulator or physical device
+
+### Installation
+
+1. Clone the repository:
+
+   ```bash
+   git clone https://github.com/your-username/currency-converter.git
+   ```
+2. Navigate to the project directory:
+
+   ```bash
+   cd currency-converter
+   ```
+3. Install dependencies:
+
+   ```bash
+   flutter pub get
+   ```
+4. Run the app:
+
+   ```bash
+   flutter run
+   ```
+
+---
+
+## 🔑 API Configuration
+
+* This app uses an external API to fetch **real-time currency exchange rates**.
+* Add your API key (if required) inside the API service file.
+* **Do not commit API keys** to public repositories.
+
+---
+
+## 📂 Project Structure
+
+```
+lib/
+ ├── models/
+ ├── services/
+ ├── screens/
+ ├── widgets/
+ └── main.dart
+```
+
+---
+
+## 🔮 Future Improvements
+
+* Replace dummy chart data with real historical data
+* Offline support
+* Advanced state management (Provider / Riverpod / Bloc)
+* Multi-language support
+
+---
+
+## 🤝 Contributing
+
+Contributions are welcome! Fork the repository and submit a pull request.
+
+---
+
+## 📄 License
+
+This project is licensed under the **MIT License**.
