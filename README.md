@@ -1,12 +1,12 @@
 # 💱 Currency Converter App
 
-A **feature-rich Flutter currency converter** that delivers **real-time exchange rates** via an external API. The app focuses on a clean, modern user experience with an updated UI, light & dark themes, favorites, charts, and a detailed conversion history.
+A **feature-rich Flutter currency converter** that delivers **real-time exchange rates** via an external API. The app focuses on a clean, modern user experience with an updated UI, light & dark themes, favorites, charts, conversion history, and intelligent error handling.
 
 ---
 
 ## 🚀 Overview
 
-This app allows users to convert currencies using **live exchange rates** fetched from an API. It also helps users track their activity and preferences through favorites and conversion history, making it more than just a basic converter.
+This app allows users to convert currencies using **live exchange rates** fetched from an API. It tracks user preferences through favorites and conversion history, and includes error handling for a smoother experience.
 
 ---
 
@@ -16,6 +16,10 @@ This app allows users to convert currencies using **live exchange rates** fetche
 * ⭐ **Favorite currencies** for faster access
 * 📈 **Exchange rate chart** (currently using dummy data)
 * 🕘 **Conversion history** to track previous conversions
+* ⚠️ **Error handling** for:
+
+  * API fetch failures
+  * Selecting the same currency for conversion
 * 🌗 **Light & Dark mode** support
 * 🎨 **Updated clean and modern UI**
 * ⚡ Smooth performance with simple state management
@@ -43,9 +47,9 @@ This app allows users to convert currencies using **live exchange rates** fetche
 | --------------------------------------- | ----------------------------------- |
 | ![Favorites](screenshots/favorites.png) | ![History](screenshots/history.png) |
 
-| Chart View                      |
-| ------------------------------- |
-| ![Chart](screenshots/chart.png) |
+| Chart View                      | Error Message Example           |
+| ------------------------------- | ------------------------------- |
+| ![Chart](screenshots/chart.png) | ![Error](screenshots/error.png) |
 
 ---
 
@@ -67,7 +71,7 @@ This app allows users to convert currencies using **live exchange rates** fetche
 2. Navigate to the project directory:
 
    ```bash
-   cd currency-converter
+   cd currency_converter_flutter
    ```
 3. Install dependencies:
 
