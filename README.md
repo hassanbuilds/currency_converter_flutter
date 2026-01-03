@@ -1,6 +1,6 @@
 # 💱 Currency Converter App
 
-A **feature-rich Flutter currency converter** that delivers **real-time exchange rates** via an external API. The app focuses on a clean, modern user experience with an updated UI, light & dark themes, favorites, charts, conversion history, and intelligent error handling
+A **feature-rich Flutter currency converter** that delivers **real-time exchange rates** via an external API. The app focuses on a clean, modern user experience with an updated UI, light & dark themes, favorites, charts, conversion history, and intelligent error handling.
 
 ---
 
