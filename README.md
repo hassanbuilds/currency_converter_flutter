@@ -37,21 +37,12 @@ This app allows users to convert currencies using **live exchange rates** fetche
 
 ## 📸 Screenshots
 
-> Replace the image paths below with your actual screenshots
+<img width="250" height="510" alt="image" src="https://github.com/user-attachments/assets/4b64904c-4173-44d2-a377-df1b332bc852" />
 
-| Light Mode                                | Dark Mode                               |
-| ----------------------------------------- | --------------------------------------- |
-| ![Light Mode]() | ![Dark Mode]() |
 
-| Favorites                               | Conversion History                  |
-| --------------------------------------- | ----------------------------------- |
-| ![Favorites]() | ![History]() |
+<img width="250" height="510" alt="image" src="https://github.com/user-attachments/assets/4b6dfa2c-d073-4332-a2e5-b05d08a3caf5" />
 
-| Chart View                      | Error Message Example           |
-| ------------------------------- | ------------------------------- |
-| ![Chart]() | ![Error]() |
 
----
 
 ## 🚀 Getting Started
 
