@@ -33,7 +33,7 @@ class AppTheme {
     ),
 
     // Cards - Cream with Brown shadow
-    cardTheme: CardTheme(
+    cardTheme: CardThemeData(
       color: Color(0xFFFFF8E1),
       elevation: 6,
       shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(20)),
@@ -149,7 +149,7 @@ class AppTheme {
     ),
 
     // Cards - Dark Gray with subtle shadows
-    cardTheme: CardTheme(
+    cardTheme: CardThemeData(
       color: Color(0xFF2D2D2D),
       elevation: 4,
       shape: RoundedRectangleBorder(
