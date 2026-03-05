@@ -77,7 +77,7 @@ This app allows users to convert currencies using **live exchange rates** fetche
 
 ---
 
-## 
+##  🔑 API Configuration
 
 * This app uses an external API to fetch **real-time currency exchange rates**.
 * Add your API key (if required) inside the API service file.
